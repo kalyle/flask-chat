@@ -9,5 +9,5 @@ class InfoModel(db.Model):
     note = db.Column(db.String(500), doc='备注')
     mobile = db.Column(db.String(11), doc='电话号码')
 
-    user_id = db.Column(db.Foreignkey("t_user.id"))
+    user_id = db.Column(db.ForeignKey("t_user.id"))
     

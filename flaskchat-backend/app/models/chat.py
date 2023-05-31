@@ -1,22 +1,35 @@
-from . import db
-from .base import BaseModel
+from app.models.base import BaseModel
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 
 
 class FriendChatRecordModel(BaseModel):
     """聊天记录"""
     __tablename__ = "t_friend_chat_record"
 
-    sender_id = db.Column(db.Integer, db.ForeignKey("t_user.id"), comment="发送方")
-    receiver_id = db.Column(db.Integer, db.ForeignKey("t_user.id"), comment="接受方")
-    content = db.Column(db.String(500), nullable=False)
+    sender_id = Column(Integer, ForeignKey("t_user.id"), comment="发送方")
+    receiver_id = Column(Integer, ForeignKey("t_user.id"), comment="接受方")
+    content = Column(String(500), nullable=False)
+
+    sender = relationship("UserModel", foreign_keys=[sender_id],backref="friend_send_msg")
+    receiver = relationship("UserModel", foreign_keys=[receiver_id], backref="friend_receive_msg")
+
 
 
 class GroupChatRecordModel(BaseModel):
     __tablename__ = "t_group_chat_record"
 
-    sender_id = db.Column(db.Integer, db.ForeignKey("t_user.id"), comment="发送方")
-    group_id = db.Column(db.Integer, db.ForeignKey("t_group.id"), comment="接受方")
-    content = db.Column(db.String(500), nullable=False)
+    sender_id = Column(Integer, ForeignKey("t_user.id"), comment="发送方")
+    group_id = Column(Integer, ForeignKey("t_group.id"), comment="接受方")
+    parent_id = Column(Integer,ForeignKey("t_group_chat_record.id"),comment="回复消息ID")
+    content = Column(String(500), nullable=False)
+
+    sender = relationship("UGroupChatRecordModelserModel", backref="group_send_msg")
+    receiver = relationship("UserModel", backref="group_receive_msg")
+    parent = relationship("GroupChatRecordModel",backref="replys",comment="回复消息")  
+
+
+
 
 # class ChatList(BaseModel):
 #     """用于首页聊天列表记录"""
@@ -24,8 +37,8 @@ class GroupChatRecordModel(BaseModel):
 #
 #     list_type = ((0, '机器人'), (1, '好友'), (2, '群聊'))
 #
-#     uid = db.Column(db.Integer, db.ForeignKey('t_user.id'))
-#     lid = db.Column(db.Integer)
-#     content = db.Column(db.String(500), nullable=False)
-#     type = db.Column(ChoiceType(list_type, SmallInteger()), comment='类型')
-#     list = db.relationship('User', backref='chat_list')
+#     uid = Column(Integer, ForeignKey('t_user.id'))
+#     lid = Column(Integer)
+#     content = Column(String(500), nullable=False)
+#     type = Column(ChoiceType(list_type, SmallInteger()), comment='类型')
+#     list = relationship('User', backref='chat_list')

@@ -3,7 +3,8 @@ from .base import BaseModel
 
 from passlib.hash import pbkdf2_sha256
 from app.models.friend import FriendModel
-from app.models.user_group_mapping import user_group_mapping
+from app.models.group import GroupModel
+from app.models.user_group_mapping import UserGroupMapping
 
 
 class UserModel(BaseModel):
@@ -13,20 +14,19 @@ class UserModel(BaseModel):
     password = db.Column(db.String(128), doc='密码')
     login_time = db.Column(db.DateTime, doc='登录时间')
 
+    # info relationship
     info = db.relationship("InfoModel",userlist=False,backref="me")
 
-    # 定义与好友申请表的一对多关系
-    friend_apply_sent = db.relationship('FriendApplyModel', backref='sender',foreign_keys='FriendApplyModel.sender_id')
-    friend_apply_received = db.relationship('FriendApplyModel', backref='receiver',foreign_keys='FriendApplyModel.receiver_id')
-    group_apply_sent = db.relationship('GroupApplyModel', backref='sender', foreign_keys='GroupApplyModel.sender_id')
-    # 定义朋友关系
+    # friend relationship
     friends = db.relationship("FriendModel", foreign_keys=[FriendModel.user_id],back_populates="user")
     friends_with_me = db.relationship("FriendModel", foreign_keys=[FriendModel.friend_id], back_populates="friend")
 
-    create_group = db.relationship("GroupModel",backref="creator")
+    # group relationship
+    groups_owned = db.relationship("GroupModel", foreign_keys=[GroupModel.owner_id],back_populates="owner")
+    groups_admin = db.relationship("GroupModel", foreign_keys=[GroupModel.adminer_id],back_populates="adminers")
     groups = db.relationship(
         "GroupModel",
-        secondary=user_group_mapping,
+        secondary=UserGroupMapping,
         back_populates="members"
     )
 

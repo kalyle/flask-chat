@@ -17,6 +17,9 @@ class FriendModel(BaseModel):
     user = db.relationship("UserModel", foreign_keys=[user_id],back_populate="friends")
     friend = db.relationship("UserModel", foreign_keys=[friend_id], back_populates="friends_with_me")
 
+
+
+    # 适用于中间表
     @staticmethod
     def do_find(user_id, friend_id):
         session: Session = db.session
