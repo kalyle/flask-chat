@@ -1,7 +1,5 @@
-from . import ma
 from .base import BaseSchema
 from app.models.user import UserModel
-from app.models.friend import FriendModel
 from app.models.info import InfoModel
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema,SQLAlchemySchema,auto_field
 from marshmallow_sqlalchemy.fields import Nested

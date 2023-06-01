@@ -7,9 +7,12 @@ from app.schemas.base import BaseSchema
 from app.schemas.user import UserOtherSchema
 
 
-class ApplyScheam(SQLAlchemySchema,BaseSchema):
+class ApplySchema(SQLAlchemySchema,BaseSchema):
     friend = Nested(UserOtherSchema)
     class Meta:
         model = FriendModel
         include_pk = True
-        fields = ["user_id","friend","apply_note","apply_status"]
+        fields = ["user_id","friend_id","friend","apply_note","apply_status"]
+        # exclude = ["user"]
+
+
