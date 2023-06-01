@@ -9,6 +9,7 @@ class BaseModel(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     create_time = db.Column(db.Date)
     update_time = db.Column(db.Date)
+    status = db.Column(db.Integer)
 
     @classmethod
     def find_by_id(cls):
@@ -55,6 +56,6 @@ class BaseModel(db.Model):
             session.rollback()
 
     @staticmethod
-    def get_limits(cls,data):
+    def get_limits(cls:Model,data):
         model_columns = set(column.name for column in cls.__table__.columns)
         return {k:v for k,v in data.items() if k in model_columns}

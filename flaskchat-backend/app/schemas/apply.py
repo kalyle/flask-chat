@@ -1,18 +1,19 @@
 from marshmallow_sqlalchemy import SQLAlchemySchema
-from marshmallow_sqlalchemy.fields import Nested
-
-from app.models.friend import FriendModel
 
 from app.schemas.base import BaseSchema
 from app.schemas.user import UserOtherSchema
+from marshmallow import fields
 
 
 class ApplySchema(SQLAlchemySchema,BaseSchema):
-    friend = Nested(UserOtherSchema)
-    class Meta:
-        model = FriendModel
-        include_pk = True
-        fields = ["user_id","friend_id","friend","apply_note","apply_status"]
-        # exclude = ["user"]
+    user_id = fields.Integer(dump_only=True)
+    friend_id = fields.Integer(dump_only=True)
+    apply_note = fields.String()
+    apply_status = fields.Integer()
 
-
+class ApplySendSchema(ApplySchema,BaseSchema):
+    friend = fields.Nested(UserOtherSchema)
+    
+class ApplyRecSchema(ApplySchema,BaseSchema):
+    user = fields.Nested(UserOtherSchema)
+    
