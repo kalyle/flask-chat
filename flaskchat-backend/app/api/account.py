@@ -1,11 +1,11 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint
-from flask_login import login_user,login_required
+from flask_login import login_required
 from app.schemas.user import UserSchema
 from app.models.user import UserModel
 
 
-accountblp = Blueprint("account","account",url_prefix="v1/account")
+accountblp = Blueprint("account","account",url_prefix="/account")
 
 @accountblp.route("/register")
 class Register(MethodView):
@@ -32,5 +32,9 @@ class PasswordReset(MethodView):
     def patch(self):
         return {}
     
-
+@accountblp.route("/<user_id>/email/reset")
+class EmailReset(MethodView):
+    @login_required
+    def patch(self):
+        return {}
 
