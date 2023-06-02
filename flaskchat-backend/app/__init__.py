@@ -1,17 +1,18 @@
 from flask import Flask
-from .settings import config_map
+from flask_smorest import Api
 
 from app.models import db
 from app.schemas import ma
-from app.api import api
+from app.api import api_v1
+
+import settings
 
 
-
-def create_app(config):
+def create_app():
     app = Flask(__name__)
-    app.config.from_object(config_map.get(config))
+    app.config.from_object(settings.DevConfig)
 
-    
+    api = Api()
     with app.app_context():
         # db
         db.init_app(app)
@@ -21,4 +22,5 @@ def create_app(config):
         ma.init_app(app)
         # cors
     
+    api.register_blueprint(api_v1)
     return app
