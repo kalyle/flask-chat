@@ -12,7 +12,7 @@ class BaseModel(db.Model):
     status = db.Column(db.Integer)
 
     @classmethod
-    def find_by_id(cls):
+    def find_by_id(cls,id):
         return cls.query.filter_by(id=id).first()
 
     @classmethod
