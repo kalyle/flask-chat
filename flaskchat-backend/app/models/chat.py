@@ -1,7 +1,7 @@
 from app.models.base import BaseModel
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-
+from . import db
 
 class FriendChatRecordModel(BaseModel):
     """聊天记录"""
@@ -19,14 +19,17 @@ class FriendChatRecordModel(BaseModel):
 class GroupChatRecordModel(BaseModel):
     __tablename__ = "t_group_chat_record"
 
+    id = Column(Integer, primary_key=True, autoincrement=True)
     sender_id = Column(Integer, ForeignKey("t_user.id"), comment="发送方")
     group_id = Column(Integer, ForeignKey("t_group.id"), comment="接受方")
     parent_id = Column(Integer,ForeignKey("t_group_chat_record.id"),comment="回复消息ID")
     content = Column(String(500), nullable=False)
 
-    sender = relationship("UGroupChatRecordModelserModel", backref="group_send_msg")
-    receiver = relationship("UserModel", backref="group_receive_msg")
-    parent = relationship("GroupChatRecordModel",backref="replys",comment="回复消息")  
+    parent_id = Column(Integer, ForeignKey('t_group_chat_record.id'))
+    parent = relationship('GroupChatRecordModel', remote_side=[id], backref='replys')
+    sender = db.relationship("GroupModel", backref="group_send_msg")
+    receiver = db.relationship("UserModel", backref="group_receive_msg")
+
 
 
 

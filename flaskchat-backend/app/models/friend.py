@@ -8,7 +8,7 @@ class FriendModel(BaseModel):
     user_id = Column(Integer, ForeignKey('t_user.id'))
     friend_id = Column(Integer, ForeignKey('t_user.id'))
     
-    apply_note = db.Column(db.String(100), comment='申请留言')
+    apply_note = Column(db.String(100), comment='申请留言')
     apply_status = Column(SmallInteger, default=0)  # 已添加，已删除，已拉黑
     # setting
     remark = Column(String(126))
@@ -17,7 +17,7 @@ class FriendModel(BaseModel):
 
     
     # foreign_keys接受类型 字符串、列表、字典
-    user = db.relationship("UserModel", foreign_keys=[user_id],back_populate="friends")
+    user = db.relationship("UserModel", foreign_keys=[user_id],back_populates="friends")
     friend = db.relationship("UserModel", foreign_keys=[friend_id], back_populates="friends_with_me")
 
 

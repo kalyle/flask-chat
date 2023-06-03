@@ -3,14 +3,14 @@ import re
 from . import ma
 from .base import BaseSchema
 from marshmallow import fields, ValidationError, validates,validates_schema
-from app.models.user import User
+from app.models.user import UserModel
 
 
 class LoginSchema(ma.Schema):
     verify_code = fields.Str(load_only=True)
 
     class Meta:
-        model = User
+        model = UserModel
         fields = ("username", "password")
 
 
@@ -19,7 +19,7 @@ class RegisterSchema(ma.SQLAlchemySchema, BaseSchema):
     password2 = fields.Str(load_only=True)
 
     class Meta:
-        model = User
+        model = UserModel
         exclude = ("note",)
 
     @validates_schema  # 验证多个字段

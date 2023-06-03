@@ -10,22 +10,32 @@ def cli():
     pass
 
 
+# @cli.command()
+# def db_create():
+#     """Creates database with all of the tables defined in
+#     your SQLAlchemy models
+#     """
+#     db.create_all()
+
+
+# @cli.command()
+# def db_drop():
+#     """Drop database with all of the tables defined in
+#     your SQLAlchemy models
+#     """
+#     db.drop_all()
+
 @cli.command()
-def create_all():
-    """Creates database with all of the tables defined in
-    your SQLAlchemy models
-    """
+def hello():
+    print("Hello")
+
+@cli.command()
+def create():
     db.create_all()
 
-
 @cli.command()
-def drop_all():
-    """Drop database with all of the tables defined in
-    your SQLAlchemy models
-    """
+def drop():
     db.drop_all()
-
-
 if __name__ == '__main__':
     cli()
 

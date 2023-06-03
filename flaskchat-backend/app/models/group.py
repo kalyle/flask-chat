@@ -1,9 +1,10 @@
 from app.models.base import BaseModel
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
+from . import db
 
-from app.models.user_group_mapping import UserGroupMapping
-
+from app.models.user_group_mapping import user_group_mapping
+from app.models.chat import GroupChatRecordModel,FriendChatRecordModel
+from app.models.apply import GroupApplyModel
 
 class GroupModel(BaseModel):
     __tablename__ = 't_group'
@@ -13,17 +14,19 @@ class GroupModel(BaseModel):
     desc = Column(String(512), comment='简介')
     # setting = Column() 群的配置信息
     member_count = Column(Integer, comment='当前人数')
-    owner_id = ForeignKey("t_user.id")
-    adminer_id = ForeignKey("t_user.id")
+    owner_id = Column(Integer, ForeignKey('t_user.id'))
+    adminer_id = Column(Integer, ForeignKey('t_user.id'))
 
-    owner = relationship("UserModel", backref="groups_owned", lazy="dynamic")
-    adminer = relationship("UserModel", backref="groups_admin", lazy="dynamic")
-    messages = relationship("GroupChatRecordModel", backref="group", lazy="dynamic")
-    group_apply_received = relationship('GroupApplyModel', backref='receiver',
-                                        foreign_keys='GroupApplyModel.sender_id')
-    members = relationship(
+    owner = db.relationship("UserModel", foreign_keys=[owner_id],back_populates="groups_owned")
+    adminers = db.relationship("UserModel", foreign_keys=[adminer_id],back_populates="groups_admin")
+    messages = db.relationship("GroupChatRecordModel", backref="group")
+    group_apply_received = db.relationship('GroupApplyModel',
+                                            primaryjoin='GroupModel.id==GroupApplyModel.group_id',
+                                            backref='receiver',
+                                        )
+    members = db.relationship(
         'UserModel',
-        secondary=UserGroupMapping,
+        secondary=user_group_mapping,
         back_populates="groups"
     )
 

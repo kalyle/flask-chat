@@ -62,10 +62,10 @@ class FriendApply(MethodView):
 
 @friendblp.route("/apply/<apply_id>")
 class FriendApplyById(MethodView):
-    @friendblp.response(200,ApplySchema)
-    @login_required
-    def get(self,apply_id):
-        return FriendModel.find_by_id(apply_id)
+    # @friendblp.response(200,ApplySchema)
+    # @login_required
+    # def get(self,apply_id):
+        # return FriendModel.find_by_id(apply_id)
 
     @friendblp.arguments(ApplyRecSchema,location="json",as_kwargs=True)
     @friendblp.response(200,ApplyRecSchema)

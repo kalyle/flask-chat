@@ -2,11 +2,12 @@ from .base import BaseSchema
 from app.models.user import UserModel
 from app.models.info import InfoModel
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema,SQLAlchemySchema,auto_field
-from marshmallow_sqlalchemy.fields import Nested
+from marshmallow import fields,validates,ValidationError
 
 class UserSelfInfoSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = InfoModel
+        order = True
 
 class UserOtherInfoSchema(SQLAlchemyAutoSchema):
     class Meta:
@@ -16,13 +17,29 @@ class UserOtherInfoSchema(SQLAlchemyAutoSchema):
 class UserSelfSchema(SQLAlchemySchema, BaseSchema):
     username = auto_field()
     login_time = auto_field()
-    info = Nested(UserSelfInfoSchema)
+    info = fields.Nested(UserSelfInfoSchema)
     class Meta:
         model = UserModel
         # partial = True  # 允许部分字段
 
 
 class UserOtherSchema(SQLAlchemySchema,BaseSchema):
-    info = Nested(UserOtherInfoSchema)
+    info = fields.Nested(UserOtherInfoSchema)
     class Meta:
         model = UserModel
+
+class RegisterSchema(SQLAlchemySchema,BaseSchema):
+    username = fields.String()
+    info = fields.Nested(UserSelfInfoSchema)
+    verify_code = fields.String()
+
+    @validates("verify_code")
+    def validate(self,data):
+        # redis中获取
+        code = 1111
+        if code != data:
+            raise ValidationError("验证码错误")
+        
+
+    def serialize(self,data):
+        data["username"] = data["mobile"]

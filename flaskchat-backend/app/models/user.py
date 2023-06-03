@@ -4,7 +4,7 @@ from .base import BaseModel
 from passlib.hash import pbkdf2_sha256
 from app.models.friend import FriendModel
 from app.models.group import GroupModel
-from app.models.user_group_mapping import UserGroupMapping
+from app.models.user_group_mapping import user_group_mapping
 
 
 class UserModel(BaseModel):
@@ -15,7 +15,7 @@ class UserModel(BaseModel):
     login_time = db.Column(db.DateTime, doc='登录时间')
 
     # info relationship
-    info = db.relationship("InfoModel",userlist=False,backref="me")
+    info = db.relationship("InfoModel",uselist=False,backref="me")
 
     # friend relationship
     friends = db.relationship("FriendModel", foreign_keys=[FriendModel.user_id],back_populates="user")
@@ -26,7 +26,7 @@ class UserModel(BaseModel):
     groups_admin = db.relationship("GroupModel", foreign_keys=[GroupModel.adminer_id],back_populates="adminers")
     groups = db.relationship(
         "GroupModel",
-        secondary=UserGroupMapping,
+        secondary=user_group_mapping,
         back_populates="members"
     )
 
