@@ -18,10 +18,10 @@ class BaseSchema(ma.Schema):
         # 驼峰 转 下划线
         pass
 
-    @pre_load
-    def deserialize(self, data, **kwargs):
-        return self.camel_to_sanke(data)
-
-    @post_dump
-    def serialize(self, data, **kwargs):
-        return self.snake_to_camel(data)
+    # @pre_load
+    # def deserialize(self, data, **kwargs):
+    #     return self.camel_to_sanke(data)
+    #
+    # @post_dump
+    # def serialize(self, data, **kwargs):
+    #     return self.snake_to_camel(data)

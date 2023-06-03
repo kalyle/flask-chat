@@ -3,8 +3,9 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from . import db
 
 from app.models.user_group_mapping import user_group_mapping
-from app.models.chat import GroupChatRecordModel,FriendChatRecordModel
+from app.models.chat import GroupChatRecordModel, FriendChatRecordModel
 from app.models.apply import GroupApplyModel
+
 
 class GroupModel(BaseModel):
     __tablename__ = 't_group'
@@ -17,13 +18,13 @@ class GroupModel(BaseModel):
     owner_id = Column(Integer, ForeignKey('t_user.id'))
     adminer_id = Column(Integer, ForeignKey('t_user.id'))
 
-    owner = db.relationship("UserModel", foreign_keys=[owner_id],back_populates="groups_owned")
-    adminers = db.relationship("UserModel", foreign_keys=[adminer_id],back_populates="groups_admin")
+    owner = db.relationship("UserModel", foreign_keys=[owner_id], back_populates="groups_owned")
+    adminers = db.relationship("UserModel", foreign_keys=[adminer_id], back_populates="groups_admin")
     messages = db.relationship("GroupChatRecordModel", backref="group")
     group_apply_received = db.relationship('GroupApplyModel',
-                                            primaryjoin='GroupModel.id==GroupApplyModel.group_id',
-                                            backref='receiver',
-                                        )
+                                           primaryjoin='GroupModel.id==GroupApplyModel.group_id',
+                                           backref='receiver',
+                                           )
     members = db.relationship(
         'UserModel',
         secondary=user_group_mapping,
@@ -39,7 +40,3 @@ class GroupModel(BaseModel):
     def is_over(group_id):
         obj = GroupModel.query.filter_by(id=group_id).first()
         return obj.member_count == obj.setting.member_count
-        
-
-
-

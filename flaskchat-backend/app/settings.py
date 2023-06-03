@@ -1,4 +1,6 @@
 import os
+
+
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "DEV_KEY")
     API_TITLE = "FlaskChat"
@@ -9,7 +11,6 @@ class Config:
     # SQLALCHEMY_POOL_TIMEOUT = 0
     # SQLALCHEMY_POOL_RECYCLE = 0
     # SQLALCHEMY_MAX_OVERFLOW = 0
-    
 
 
 class DevConfig(Config):
