@@ -5,7 +5,7 @@ from app.models import db
 from app.schemas import ma
 from app.api import api
 
-
+from app.extension.permission import principal
 
 def create_app(config):
     app = Flask(__name__)
@@ -20,5 +20,8 @@ def create_app(config):
         # ma
         ma.init_app(app)
         # cors
+
+        # principal
+        principal.init_app(app)
     
     return app
