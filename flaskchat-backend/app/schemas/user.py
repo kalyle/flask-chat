@@ -1,56 +1,60 @@
-from .base import BaseSchema
+import re
+
+from marshmallow_sqlalchemy import SQLAlchemySchema,SQLAlchemyAutoSchema
+from app.schemas.base import BaseSchema,UserOtherSchema
+from marshmallow import fields, ValidationError, validates,validates_schema
 from app.models.user import UserModel
-from app.models.info import InfoModel
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, SQLAlchemySchema, auto_field
-from marshmallow import fields, validates_schema, ValidationError, EXCLUDE, pre_load
+from app.schemas.group import GroupSchema
 
 
-class UserSelfInfoSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = InfoModel
-        ordered = True
-        partial = True
 
-
-class UserOtherInfoSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = InfoModel
-        fields = ["nickname", "avatar", "gender", "note"]
-
-
-class UserSelfSchema(SQLAlchemySchema, BaseSchema):
-    username = auto_field()
-    login_time = auto_field()
-    info = fields.Nested(UserSelfInfoSchema)
+class UserSelfSchema(SQLAlchemyAutoSchema):
+    friends = fields.Nested(UserOtherSchema, many=True)
+    groups = fields.Nested(GroupSchema, many=True)
 
     class Meta:
         model = UserModel
-        # partial = True  # 允许部分字段
+        load_instance = True
+        exclude = ["friends_with_me", "groups_owned"]
+        # include = EXCLUDE
+        # partial = True  #SQLAlchemyAutoSchema中不能使用
+
+# SQLAlchemyAutoSchema back_populates会加载，使用backref会加载？
 
 
-class UserOtherSchema(SQLAlchemySchema, BaseSchema):
-    info = fields.Nested(UserOtherInfoSchema)
+
+class LoginSchema(SQLAlchemySchema):
+    verify_code = fields.Str(load_only=True,allow_none=False)
 
     class Meta:
         model = UserModel
-
-
-class RegisterSchema(SQLAlchemySchema, BaseSchema):
-    username = fields.String()
-    info = fields.Nested(UserSelfInfoSchema)
-    verify_code = fields.String(load_only=True)
+        fields = ("username", "password","verify_code")
 
     @validates_schema
     def validate(self, data, **kwargs):
-        # redis中获取
-        # code = 1111
-        # if code != data:
-        #     raise ValidationError("验证码错误")
-        if "verify_code" in data:
-            print("code", data["verify_code"])
+        if data["verify_code"]:
+            pass
+        else:
+            raise ValidationError
         del data["verify_code"]
-
-    @pre_load
-    def deserialize(self, data, **kwargs):
-        data["username"] = data["info"]["mobile"]
         return data
+
+
+class RegisterSchema(SQLAlchemySchema, BaseSchema):
+    password2 = fields.Str(load_only=True)
+
+    class Meta:
+        model = UserModel
+        load_instance = True
+
+    @validates_schema  # 验证多个字段
+    def validate(self,data,**kwargs):
+        if data["password"] != data["password2"]:
+            raise ValidationError("密码输入错误")
+        return data
+
+    @validates("email")  # 验证单个字段
+    def validate_email(self,email):
+        if re.match("", email):
+            raise ValidationError("邮箱格式错误")
+        return email

@@ -1,11 +1,13 @@
 from flask import Flask
 from flask_smorest import Api
 from flask_migrate import Migrate
+from flask_socketio import SocketIO
 from app.models import db
 from app.schemas import ma
 from app.api import api_v1
 
 from app import settings
+from app.extensions.login_ext import login_manager
 
 
 def create_app():
@@ -14,6 +16,8 @@ def create_app():
 
     api = Api()
     migrate = Migrate()
+    socketio = SocketIO()
+
     with app.app_context():
         # db
         db.init_app(app)
@@ -22,11 +26,10 @@ def create_app():
         # ma
         ma.init_app(app)
         # cors
-
+        login_manager.init_app(app)
         # migrate
-        migrate.init_app(app,db)
-    
-    api.register_blueprint(api_v1)
+        migrate.init_app(app, db)
+        socketio.init_app(app)  # 无法使用flask-migrate迁移，Error: A valid Flask application was not obtained from 'flaskchat-backend.app:create_app()'.
 
-    # app.db = db
+    api.register_blueprint(api_v1)
     return app

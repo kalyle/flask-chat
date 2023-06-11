@@ -3,30 +3,33 @@ from marshmallow_sqlalchemy import SQLAlchemySchema
 from app.models.friend import FriendModel
 from app.schemas.base import BaseSchema
 from app.schemas.user import UserOtherSchema
-from marshmallow import fields, EXCLUDE, post_dump
+from marshmallow import fields, EXCLUDE, post_dump, pre_load
 
 
-class ApplyBaseSchema(SQLAlchemySchema):
-    user_id = fields.Integer(dump_only=True)
-    friend_id = fields.Integer(dump_only=True)
+class ApplySchema(SQLAlchemySchema):
+    user_id = fields.Integer()
+    friend_id = fields.Integer()
     apply_note = fields.String()
     apply_status = fields.Integer()
 
+    class Meta:
+        model = FriendModel
+        # partial = True
+        # include = EXCLUDE
 
-class postApplySchema(ApplyBaseSchema):
+
+class postApplySchema(ApplySchema):
     class Meta:
         model = FriendModel
         unknown = EXCLUDE
 
 
-class getApplySchema(SQLAlchemySchema, ApplyBaseSchema,BaseSchema):
+class getApplySchema(ApplySchema, BaseSchema):
     friend = fields.Nested(UserOtherSchema)
     user = fields.Nested(UserOtherSchema)
 
     class Meta:
         model = FriendModel
-        include_pk = True
-        partial = True
 
     @post_dump
     def serialize(self, data, **kwargs):
@@ -38,7 +41,14 @@ class getApplySchema(SQLAlchemySchema, ApplyBaseSchema,BaseSchema):
         del data["user"]
         return data
 
+    @pre_load
+    def serialize(self, data, **kwargs):
+        if data['user_id'] == current_user.id:
+            data["friend"] = data["fromApply"]
+        else:
+            data["user"] = data["toApply"]
+        del data["fromApply"]
+        del data["toApply"]
+        return data
 
-class patchApplySchema(SQLAlchemySchema):
-    class Meta:
-        model = FriendModel
+

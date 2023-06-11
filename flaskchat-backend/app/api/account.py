@@ -1,11 +1,13 @@
+from flask import request
 from flask.views import MethodView
-from flask_smorest import Blueprint
-from flask_login import login_required, current_user
-from app.schemas.user import UserSelfSchema, UserOtherSchema, RegisterSchema
-from app.models.user import UserModel
-from app.models.info import InfoModel
+from flask_smorest import Blueprint,abort
+from flask_login import login_required, current_user, login_user
 
-from schemas.user import UserOtherSchema
+from app.extensions.login_ext import User
+from app.schemas.user import RegisterSchema
+from app.schemas.user import UserSelfSchema, UserOtherSchema
+from app.models.user import UserModel
+
 
 accountblp = Blueprint("account", "account", url_prefix="/account")
 
@@ -14,11 +16,8 @@ accountblp = Blueprint("account", "account", url_prefix="/account")
 class Register(MethodView):
     @accountblp.arguments(RegisterSchema, location="json")
     @accountblp.response(200, UserSelfSchema)
-    def post(self, new_data):
-        username = new_data.get("username")
-        info: dict = new_data.get("info")
-        id = UserModel(username=username).save_to_db()
-        InfoModel(user_id=id, **info).save_to_db()
+    def post(self, new_data:UserModel):
+        id = new_data.save_to_db()
         return UserModel.find_by_id(id)
 
 
@@ -26,29 +25,41 @@ class Register(MethodView):
 class Info(MethodView):
     @accountblp.response(200)
     def get(self, user_id):
+        #
+        user = User(1)
+        login_user(user)
+        print("current", current_user, current_user.__dict__, current_user.id)
+        #
         # 获取指定user info
         user = UserModel.find_by_id(user_id)
-        if user_id == current_user.id:
+        if int(user_id) == current_user.id:
             response = UserSelfSchema().dump(user)
         else:
             response = UserOtherSchema().dump(user)
         return response
 
+    @accountblp.arguments(UserSelfSchema)
     @login_required
-    def patch(self):
-        # 修改 user 信息
-        return {}
+    def patch(self,new_data:UserModel,user_id):
+        if int(user_id) == current_user.id:
+            UserModel.update_by_limit(user_id,new_data.__dict__)
+            return UserModel.find_by_id(user_id)
+        else:
+            abort(400)
 
 
 @accountblp.route("/<user_id>/password/reset")
 class PasswordReset(MethodView):
     @login_required
-    def patch(self):
+    @accountblp.response(200)
+    def patch(self,user_id):
+        data = request.get_json()
+        code = ""
+        if data["password"] != data["password2"]:
+            abort(400)
+        if not code:
+            # 手机验证码
+            abort(400)
+        UserModel.update_by_limit(user_id, data["password"])
         return {}
 
-
-@accountblp.route("/<user_id>/email/reset")
-class EmailReset(MethodView):
-    @login_required
-    def patch(self):
-        return {}

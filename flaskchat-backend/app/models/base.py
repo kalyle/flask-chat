@@ -1,3 +1,5 @@
+from sqlalchemy import or_
+
 from . import db
 from sqlalchemy.orm import Session, Query
 from flask_sqlalchemy.model import Model
@@ -13,7 +15,7 @@ class BaseModel(db.Model):
 
     @classmethod
     def find_by_id(cls,id):
-        return cls.query.filter_by(id=id).first()
+        return cls.query.filter_by(id=int(id)).first()
 
     @classmethod
     def find_all(cls):
@@ -22,7 +24,12 @@ class BaseModel(db.Model):
     @classmethod
     def find_by_limit(cls,find_data):
         data = cls.get_limits(cls,find_data)
-        return cls.query.filter_by(data).all()
+        return cls.query.filter_by(**data).all()
+
+    @classmethod
+    def find_by_or_limit(cls,find_data):
+        data = cls.get_limits(cls,find_data)
+        return cls.query.filter_by(or_(**data)).all()
     
     @classmethod
     def update_by_limit(cls,id,update_data:dict):
@@ -59,3 +66,7 @@ class BaseModel(db.Model):
     def get_limits(cls:Model,data):
         model_columns = set(column.name for column in cls.__table__.columns)
         return {k:v for k,v in data.items() if k in model_columns}
+
+    @classmethod
+    def paginate_by_query(cls,query_dict:dict):
+        cls.query.filter()

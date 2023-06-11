@@ -1,5 +1,11 @@
+import re
+
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+
 from . import ma
 from marshmallow import fields, post_dump,pre_load
+
+from ..models.user import UserModel
 
 
 class BaseSchema(ma.Schema):
@@ -11,17 +17,32 @@ class BaseSchema(ma.Schema):
     @staticmethod
     def snake_to_camel(data: dict):
         # 下划线 转 驼峰
-        pass
+        transed_data = {}
+        for key, value in data.items():
+            transed_data[re.sub(r"_([a-z])", lambda m: m.group(1).upper(), key)] = value
+        return transed_data
 
     @staticmethod
     def camel_to_sanke(data: dict):
         # 驼峰 转 下划线
-        pass
+        transed_data = {}
+        for key, value in data.items():
+            transed_data[
+                re.sub(r"([A-Z])", lambda m: f"_{m.group(1).lower()}", key)
+            ] = value
+        return transed_data
 
-    # @pre_load
-    # def deserialize(self, data, **kwargs):
-    #     return self.camel_to_sanke(data)
-    #
-    # @post_dump
-    # def serialize(self, data, **kwargs):
-    #     return self.snake_to_camel(data)
+    @pre_load
+    def deserializer(self,data,**kwargs):
+        return self.camel_to_sanke(data)
+
+    @post_dump
+    def serializer(self,data,**kwargs):
+        return self.snake_to_camel()
+
+
+class UserOtherSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = UserModel
+        load_instance = True
+        fields = ["id", "nickname", "avatar", "gender", "note"]

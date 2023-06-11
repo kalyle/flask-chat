@@ -5,22 +5,19 @@ from sqlalchemy.orm import Session
 
 
 class FriendModel(BaseModel):
+    __tablename__ = 't_friend'
+
     user_id = Column(Integer, ForeignKey('t_user.id'))
     friend_id = Column(Integer, ForeignKey('t_user.id'))
-    
+
     apply_note = Column(db.String(100), comment='申请留言')
     apply_status = Column(SmallInteger, default=0)  # 已添加，已删除，已拉黑
     # setting
-    remark = Column(String(126))
-    top = Column(SmallInteger, default=0)
-    black = Column(SmallInteger,default=0)
+    # setting = db.relationship("SettingModel",backref="friend")
 
-    
     # foreign_keys接受类型 字符串、列表、字典
-    user = db.relationship("UserModel", foreign_keys=[user_id],back_populates="friends")
+    user = db.relationship("UserModel", foreign_keys=[user_id], back_populates="friends")
     friend = db.relationship("UserModel", foreign_keys=[friend_id], back_populates="friends_with_me")
-
-
 
     # 适用于中间表
     @staticmethod

@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from . import db
 
+
 class FriendChatRecordModel(BaseModel):
     """聊天记录"""
     __tablename__ = "t_friend_chat_record"
@@ -11,9 +12,8 @@ class FriendChatRecordModel(BaseModel):
     receiver_id = Column(Integer, ForeignKey("t_user.id"), comment="接受方")
     content = Column(String(500), nullable=False)
 
-    sender = relationship("UserModel", foreign_keys=[sender_id],backref="friend_send_msg")
+    sender = relationship("UserModel", foreign_keys=[sender_id], backref="friend_send_msg")
     receiver = relationship("UserModel", foreign_keys=[receiver_id], backref="friend_receive_msg")
-
 
 
 class GroupChatRecordModel(BaseModel):
@@ -22,17 +22,12 @@ class GroupChatRecordModel(BaseModel):
     id = Column(Integer, primary_key=True, autoincrement=True)
     sender_id = Column(Integer, ForeignKey("t_user.id"), comment="发送方")
     group_id = Column(Integer, ForeignKey("t_group.id"), comment="接受方")
-    parent_id = Column(Integer,ForeignKey("t_group_chat_record.id"),comment="回复消息ID")
+    parent_id = Column(Integer, ForeignKey("t_group_chat_record.id"), comment="回复消息ID")
     content = Column(String(500), nullable=False)
 
-    parent_id = Column(Integer, ForeignKey('t_group_chat_record.id'))
-    parent = relationship('GroupChatRecordModel', remote_side=[id], backref='replys')
-    sender = db.relationship("GroupModel", backref="group_send_msg")
-    receiver = db.relationship("UserModel", backref="group_receive_msg")
-
-
-
-
+    parent = relationship('GroupChatRecordModel', remote_side=[id], backref='replys')  # remote_side用于自关联设置
+    sender = db.relationship("UserModel", backref="group_msg_send")
+    group = db.relationship("GroupModel", back_populates="group_msg_received")
 
 # class ChatList(BaseModel):
 #     """用于首页聊天列表记录"""
