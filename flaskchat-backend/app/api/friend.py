@@ -1,11 +1,12 @@
 from flask.views import MethodView
-from flask_smorest import Blueprint
+from flask_smorest import Blueprint,abort
 from flask import jsonify, request
 
 from app.extensions.login_ext import User
 from app.models.friend import FriendModel
 from app.models.user import UserModel
-from app.schemas.friend import ApplySchema,getApplySchema
+from app.schemas.friend import ApplySchema, getApplySchema
+from app.schemas.query import QuerySchema
 from flask_login import current_user, login_user
 
 from app.schemas.user import UserOtherSchema
@@ -15,22 +16,32 @@ friendblp = Blueprint("friend", "friend", url_prefix="/friend")
 
 @friendblp.route("")
 class Friend(MethodView):
-    # @friendblp.arguments(QuerySchema,location="query",as_kwargs=True)  # 按照组名\首字母 分组 默认按照首字母分组
-    @friendblp.response(200,UserOtherSchema(many=True))
-    def get(self):
+    @friendblp.arguments(
+        QuerySchema, location="query", as_kwargs=True
+    )  # 按照组名\首字母 分组 默认按照首字母分组
+    @friendblp.response(200, UserOtherSchema(many=True))
+    def get(self, **query_dict):
         #
-        user = User(1)
-        login_user(user)
-        print("current", current_user, current_user.__dict__, current_user.id)
+        login_user(User(1))
         #
         user = UserModel.find_by_id(current_user.id)
+        if query_dict["type"] == "name":
+            # 按照姓名排序
+            pass
+        elif query_dict["type"] == "group":
+            # 按照分组排序
+            pass
         return user.friends
 
     @friendblp.response(200)
     def delete(self):
         friend_id = request.get_json()["friendId"]
-        user_of_me = FriendModel.find_by_limit({"user_id": current_user.id, "friend_id": friend_id})
-        friend_of_me = FriendModel.find_by_limit({"user_id": friend_id, "friend_id": current_user.id})
+        user_of_me = FriendModel.find_by_limit(
+            {"user_id": current_user.id, "friend_id": friend_id}
+        )
+        friend_of_me = FriendModel.find_by_limit(
+            {"user_id": friend_id, "friend_id": current_user.id}
+        )
 
         user_of_me.delete_from_db()
         friend_of_me.delete_from_db()
@@ -60,9 +71,15 @@ class FriendApply(MethodView):
     @friendblp.arguments(ApplySchema, location="json")
     @friendblp.response(200, getApplySchema)
     # @login_user
-    def post(self, new_data:FriendModel):
-        # 重定向到好友聊天列表，并生成chatlist
-        id = new_data.save_to_db()
+    def post(self, new_data):
+        #
+        login_user(User(1))
+        #
+        count = FriendModel.find_by_limit(new_data)
+        if count:
+            id = count[0].id
+        else:
+            id = FriendModel(**new_data).save_to_db()
         # emit apply msg
         # emit(user,apply_response)
         return FriendModel.find_by_id(id)
@@ -70,9 +87,9 @@ class FriendApply(MethodView):
 
 @friendblp.route("/apply/<apply_id>")
 class FriendApplyById(MethodView):
-    @friendblp.response(200,getApplySchema)
-    def get(self,apply_id):
-        print("type",type(apply_id))
+    @friendblp.response(200, getApplySchema)
+    def get(self, apply_id):
+        print("type", type(apply_id))
         return FriendModel.find_by_id(apply_id)
 
     @friendblp.arguments(ApplySchema, location="json", as_kwargs=True)
@@ -82,7 +99,11 @@ class FriendApplyById(MethodView):
         FriendModel.update_by_limit(apply_id, data)
         if apply_status == 1:  # 同意
             # 成为好友
-            FriendModel(user_id=data["friend_id"], friend_id=data["user_id"], apply_status=apply_status).save_to_db()
+            FriendModel(
+                user_id=data["friend_id"],
+                friend_id=data["user_id"],
+                apply_status=apply_status,
+            ).save_to_db()
         response = FriendModel.find_by_id(apply_id)
         # emit apply msg
         # emit(user,apply_response)
@@ -94,3 +115,22 @@ class FriendApplyById(MethodView):
         apply = FriendModel.find_by_id(apply_id)
         apply.delete_from_db()
         return {}
+
+
+# @friendblp.route("<user_id>/SortByGroup")
+# class SortByGroup(MethodView):
+#     @friendblp.response(200)
+#     def get(self, user_id):
+#         return {}
+
+#     @friendblp.response(200)
+#     def post(self, user_id):
+#         return {}
+
+#     @friendblp.response(200)
+#     def patch(self, user_id):
+#         return {}
+
+#     @friendblp.response(200)
+#     def delete(self, user_id):
+#         return {}

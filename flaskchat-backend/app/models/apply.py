@@ -13,4 +13,4 @@ class GroupApplyModel(BaseModel):
     apply_status = Column(SmallInteger, default=0)  # 已添加，已删除，已拒绝
 
     group = db.relationship("GroupModel", back_populates="group_apply_received")
-    sender = db.relationship("UserModel",back_populates="group_apply_send")
+    sender = db.relationship("UserModel", back_populates="group_apply_send")

@@ -1,4 +1,4 @@
-from sqlalchemy import Column,String,Integer
+from sqlalchemy import Column, String, Integer
 
 from . import db
 from .base import BaseModel
@@ -24,18 +24,22 @@ class UserModel(BaseModel):
     is_active = Column(Integer)
 
     # friend relationship
-    friends = db.relationship("FriendModel", foreign_keys=[FriendModel.user_id], back_populates="user")
-    friends_with_me = db.relationship("FriendModel", foreign_keys=[FriendModel.friend_id], back_populates="friend")
-
-    # group relationship
-    groups_owned = db.relationship("GroupModel", foreign_keys=[GroupModel.owner_id], back_populates="owner")
-    groups = db.relationship(
-        "GroupModel",
-        secondary=user_group_mapping,
-        back_populates="members"
+    friends = db.relationship(
+        "FriendModel", foreign_keys=[FriendModel.user_id], back_populates="user"
+    )
+    friends_with_me = db.relationship(
+        "FriendModel", foreign_keys=[FriendModel.friend_id], back_populates="friend"
     )
 
-    group_apply_send = db.relationship("GroupApplyModel",back_populates="sender")
+    # group relationship
+    groups_owned = db.relationship(
+        "GroupModel", foreign_keys=[GroupModel.owner_id], back_populates="owner"
+    )
+    groups = db.relationship(
+        "GroupModel", secondary=user_group_mapping, back_populates="members"
+    )
+    # group apply
+    group_apply_send = db.relationship("GroupApplyModel", back_populates="sender")
 
     @property
     def password_salt(self):

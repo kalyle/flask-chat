@@ -16,17 +16,23 @@ class GroupModel(BaseModel):
     # setting = Column() 群的配置信息
     member_count = Column(Integer, comment='当前人数')
     owner_id = Column(Integer, ForeignKey('t_user.id'))
-
-    owner = db.relationship("UserModel", foreign_keys=[owner_id], back_populates="groups_owned")
-    group_msg_received = db.relationship("GroupChatRecordModel", back_populates="group")
-    group_apply_received = db.relationship('GroupApplyModel',
-                                           primaryjoin='GroupModel.id==GroupApplyModel.group_id',
-                                           back_populates="group"
-                                           )
+    # admin_id = Column(Integer, ForeignKey('t_user.id'))
+    owner = db.relationship(
+        "UserModel", foreign_keys=[owner_id], back_populates="groups_owned"
+    )
+    # group admin and owner
+    # admins = db.relationship(
+    #     "UserModel", foreign_keys=[admin_id], back_populates="groups_admined"
+    # )
     members = db.relationship(
-        'UserModel',
-        secondary=user_group_mapping,
-        back_populates="groups"
+        'UserModel', secondary=user_group_mapping, back_populates="groups"
+    )
+    # group apply
+    group_msg_received = db.relationship("GroupChatRecordModel", back_populates="group")
+    group_apply_received = db.relationship(
+        'GroupApplyModel',
+        primaryjoin='GroupModel.id==GroupApplyModel.group_id',
+        back_populates="group",
     )
 
     @classmethod

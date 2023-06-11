@@ -29,7 +29,10 @@ def create_app():
         login_manager.init_app(app)
         # migrate
         migrate.init_app(app, db)
-        socketio.init_app(app)  # 无法使用flask-migrate迁移，Error: A valid Flask application was not obtained from 'flaskchat-backend.app:create_app()'.
+        socketio.init_app(
+            app
+        )
+        # return socketio ，Error: A valid Flask application was not obtained from 'flaskchat-backend.app:create_app()'
 
     api.register_blueprint(api_v1)
     return app

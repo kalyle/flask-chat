@@ -3,6 +3,7 @@ from flask.cli import FlaskGroup
 
 from app import create_app
 
+
 @click.group(cls=FlaskGroup, create_app=create_app)
 def cli():
     pass
@@ -22,8 +23,11 @@ def cli():
 #     your SQLAlchemy models
 #     """
 #     db.drop_all()
+@click.command()
+def socketio_run():
+    app, socketio = create_app()
+    socketio.run(app)
+
+
 if __name__ == '__main__':
     cli()
-
-
-

@@ -32,23 +32,21 @@ class getApplySchema(ApplySchema, BaseSchema):
         model = FriendModel
 
     @post_dump
-    def serialize(self, data, **kwargs):
+    def serializer(self, data, **kwargs):
         if data['user_id'] == current_user.id:
             data["fromApply"] = data["friend"]
         else:
             data["toApply"] = data["user"]
         del data["friend"]
         del data["user"]
-        return data
+        return self.snake_to_camel(data)
 
     @pre_load
-    def serialize(self, data, **kwargs):
+    def deserializer(self, data, **kwargs):
         if data['user_id'] == current_user.id:
             data["friend"] = data["fromApply"]
         else:
             data["user"] = data["toApply"]
         del data["fromApply"]
         del data["toApply"]
-        return data
-
-
+        return self.camel_to_sanke(data)

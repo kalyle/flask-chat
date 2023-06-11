@@ -4,8 +4,7 @@ from marshmallow import fields, post_dump
 
 from app.models.apply import GroupApplyModel
 from app.models.group import GroupModel
-from app.schemas.base import BaseSchema,UserOtherSchema
-
+from app.schemas.base import BaseSchema, UserOtherSchema
 
 
 class GroupSchema(SQLAlchemyAutoSchema):
@@ -19,6 +18,10 @@ class GroupApplySchema(SQLAlchemySchema):
     group_id = fields.Integer()
     apply_note = fields.String()
     apply_status = fields.Integer()
+
+    class Meta:
+        model = GroupApplyModel
+        load_instance = True
 
 
 class getGroupApplySchema(SQLAlchemySchema, BaseSchema):

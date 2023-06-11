@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String,ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey
 from . import db
 
 
@@ -11,4 +11,4 @@ class SettingModel(db.Model):
     hide = Column(Integer)
     background = Column(String(255))
 
-    friend_id = Column(Integer,ForeignKey("t_friend.id"),primary_key=True)
+    friend_id = Column(Integer, ForeignKey("t_friend.id"), primary_key=True)
