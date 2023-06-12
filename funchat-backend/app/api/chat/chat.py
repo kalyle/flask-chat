@@ -29,26 +29,28 @@ class NotifyNamespace(Namespace):
         for friend in user.friends:
             join_room(NotifyNamespace.get_name(user.id, friend.id))
             # 通知在线的朋友，你已上线（设置为需要上线通知，特别关心）
-            if friend.id in redis_data and friend.setting.online_notice:
-                emit("online_notice", friend, to=friend.id)
+            if friend.id in redis_data:
+                NotifyNamespace.online_mark(1, friend.id)
+
+                if friend.setting.online_notice:
+                    emit("online_notice", friend, to=friend.id)
         for group in user.groups:
             join_room(group.id)
-        NotifyNamespace.online_mark(1)
 
     @staticmethod
     def leave_out():
         user = User.request_user
         for friend in user.friends:
             leave_room(friend.id)
+            NotifyNamespace.online_mark(0, friend.id)
+
         for group in user.groups:
             leave_room(group.id)
 
-        NotifyNamespace.online_mark(0)
-
     @staticmethod
-    def online_mark(status: int):
+    def online_mark(status: int, to: int):
         # data --->  {"online": 0},0--->outline,1--->online
-        emit("onlineMark", {"online": status})
+        emit("onlineMark", {"online": status}, to=to)
 
     @staticmethod
     def get_name(user_id, friend_id):
@@ -64,6 +66,7 @@ class NotifyNamespace(Namespace):
 
 class ChatNamespace(Namespace):
     def on_friend_chat(self, msg):
+        # 文本审核，是否不良内容
         chat_record = FriendChatSchema().load(msg)
         id = chat_record.save_to_db()
         result = FriendChatSchema().dump(FriendChatRecordModel.find_by_id(id))
@@ -73,5 +76,8 @@ class ChatNamespace(Namespace):
             to=ChatNamespace.get_name(msg["receiver", msg["sender"]]),
         )
 
-    def on_group_chat(self):
-        pass
+    def on_group_chat(self, msg):
+        chat_record = FriendChatSchema().load(msg)
+        id = chat_record.save_to_db()
+        result = FriendChatSchema().dump(FriendChatRecordModel.find_by_id(id))
+        emit("groupChat", result, to=msg["group_id"])
