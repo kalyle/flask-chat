@@ -5,8 +5,10 @@ from marshmallow import fields, EXCLUDE, post_dump, pre_load
 
 
 class FriendChatSchema(SQLAlchemySchema, BaseSchema):
-    pass
+    class Meta:
+        load_instance = True
 
 
 class GroupChatSchema(SQLAlchemySchema, BaseSchema):
-    pass
+    class Meta:
+        load_instance = True
