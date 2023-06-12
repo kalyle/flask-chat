@@ -1,7 +1,7 @@
 import functools
 from flask import request
 from flask_login import current_user
-from flask_socketio import disconnect, emit
+from flask_socketio import disconnect
 
 
 def authenticated_only(func):

@@ -27,6 +27,9 @@ class DevConfig(Config):
 
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # redis
+    REDIS_HOST = os.getenv("REDIS_HOST") or "127.0.0.1"
+    REDIS_POST = int(os.getenv("REDIS_POST") or "6379")
 
     # smorest
     OPENAPI_VERSION = "3.0.2"
@@ -40,5 +43,3 @@ class DevConfig(Config):
     OPENAPI_SWAGGER_UI_URL = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     OPENAPI_RAPIDOC_PATH = "/rapidoc"
     OPENAPI_RAPIDOC_URL = "https://unpkg.com/rapidoc/dist/rapidoc-min.js"
-
-    # redis
