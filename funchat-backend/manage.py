@@ -7,6 +7,7 @@ from app.extensions.socketio import socketio
 @click.option('-p', default=8000, help='run port')
 def runserver(p):
     app = create_app()
+
     socketio.init_app(app)
     socketio.run(app, port=p)
 

@@ -7,7 +7,7 @@ from flask_login import login_user
 
 from app.extensions.login_ext import User
 
-loginblp = Blueprint("login", "login", url_prefix="v1/login")
+loginblp = Blueprint("login", "login", url_prefix="/login")
 
 
 @loginblp.route("")

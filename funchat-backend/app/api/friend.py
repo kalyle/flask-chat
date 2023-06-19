@@ -1,5 +1,5 @@
 from flask.views import MethodView
-from flask_smorest import Blueprint,abort
+from flask_smorest import Blueprint, abort
 from flask import jsonify, request
 
 from app.extensions.login_ext import User
@@ -131,6 +131,14 @@ class FriendApplyById(MethodView):
 #     def patch(self, user_id):
 #         return {}
 
+
 #     @friendblp.response(200)
 #     def delete(self, user_id):
 #         return {}
+@friendblp.route("/history")
+class Histroy(MethodView):
+    def get(self, **query_dict):
+        pass
+
+    def delete(self, data):
+        pass
