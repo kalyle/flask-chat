@@ -10,6 +10,8 @@ from flask import request
 from app.extensions.login_ext import User
 from app.schemas.chat import FriendChatSchema, GroupChatSchema
 from app.models.chat import FriendChatRecordModel, GroupChatRecordModel
+from app.models.friend import FriendModel
+from app.models.group import GroupModel
 from utils.socketio import authenticated_only
 from app.extensions.reids import cache
 import datetime
@@ -33,9 +35,6 @@ class NotifyNamespace(Namespace):
         today = datetime.date.today().isoformat()
         cache.str_incr(f"{today}_visit_count", 60 * 60 * 24 * 7)
 
-        # 在线
-        cache.set_add("online_users", current_user.id)
-
     def on_disconnect(self):
         self.leave_out()
         cache.set_rem("global_online_users", current_user.id)
@@ -49,13 +48,13 @@ class NotifyNamespace(Namespace):
             # 通知在线的朋友，你已上线（设置为需要上线通知，特别关心）,获取好友在线情况
             if cache.set_ismember("global_online_users", friend.id):
                 friend_online.append(friend.id)
-                NotifyNamespace.online_mark(to=friend.id, status=1, user=user.id)
+                NotifyNamespace.online_mark(to=friend.id, online=1, user=user.id)
                 if friend.setting.online_notice:
                     emit("friend_online_notice", user, to=friend.id)
 
         for group in user.groups:
             join_room(group.id)
-            NotifyNamespace.online_mark(to=group.name, status=1, user=user.id)
+            NotifyNamespace.online_mark(to=group.name, online=1, user=user.id)
             cache.set_add(f"{group.name}_member_online", user.id)
         emit("friend_online", friend_online)
 
@@ -64,16 +63,16 @@ class NotifyNamespace(Namespace):
         user = User.request_user
         for friend in user.friends:
             leave_room(friend.id)
-            NotifyNamespace.online_mark(to=friend.id, status=0, user=user.id)
+            NotifyNamespace.online_mark(to=friend.id, online=0, user=user.id)
         for group in user.groups:
             leave_room(group.id)
-            NotifyNamespace.online_mark(to=group.name, status=0, user=user.id)
+            NotifyNamespace.online_mark(to=group.name, online=0, user=user.id)
             cache.set_rem(f"{group.name}_member_online", user.id)
 
     @staticmethod
-    def online_mark(to, status: int, user: int):
-        # data ---> 0--->outline    1--->online
-        emit("online_mark", {"online": status, "user": user}, to=to)
+    def online_mark(to, online: int, user: int):
+        # 0--->outline    1--->online
+        emit("online_mark", {"online": online, "user": user}, to=to)
 
     @staticmethod
     def get_name(user_id, friend_id):
@@ -96,6 +95,25 @@ class NotifyNamespace(Namespace):
 
 
 class ChatNamespace(Namespace):
+    def on_msg_read(self, data):
+        # 消息已读
+        chat_id = data["chat_id"]
+        chat_type = data["chat_type"]
+        if chat_type == "friend":
+            FriendChatRecordModel.query.filter(id=chat_id, read=False).update(
+                {"read": True}
+            )
+            friend = FriendModel.find_by_id(chat_id)
+            room = NotifyNamespace.get_name(current_user.id, friend.friend_id)
+        else:
+            GroupChatRecordModel.query.filter(id=chat_id, read=False).update(
+                {"read": True}
+            )
+            group = GroupModel.find_by_id(chat_id)
+            room = group.name
+
+        emit("msgRead", 200, to=room)
+
     def on_friend_chat(self, msg):
         chat_record = FriendChatSchema().load(msg)
         id = chat_record.save_to_db()
@@ -115,7 +133,7 @@ class ChatNamespace(Namespace):
         content = data["applyNote"]
         emit("groupWelcome", data, to=data["group_id"])
 
-    def on_into_group(self, group_name):
+    def on_group_enter(self, group_name):
         # 推送组内用户列表
         # 统计每个群聊在线人员(首次进入房间)
         group_online_num = cache.set_members(f"{group_name}")

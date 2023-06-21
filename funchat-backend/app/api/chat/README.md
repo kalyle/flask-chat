@@ -9,3 +9,5 @@
 
 - global_online_users:全局在线人员
 - {group.nmae}\_member_online:群内在线人员
+- visit_count: 总访问量
+- {today}\_visit_count：当日访问量
