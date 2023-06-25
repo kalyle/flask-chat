@@ -1,11 +1,15 @@
-import os
+import os, datetime
 
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "DEV_KEY")
+    SECRET_KEY = os.getenv("SECRET_KEY", "DEV_KEY") or 'secret!'
     API_TITLE = "FlaskChat"
     API_VERSION = "v1"
     OPENAPI_VERSION = "3.0.2"
+    CORS_SUPPORTS_CREDENTIALS = True
+
+    JWT_SECRET_KEY = ""
+    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(days=1)
     # 连接池
     # SQLALCHEMY_POOL_SIZE = 0
     # SQLALCHEMY_POOL_TIMEOUT = 0

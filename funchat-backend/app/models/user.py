@@ -31,6 +31,7 @@ class UserModel(BaseModel):
         "FriendModel", foreign_keys=[FriendModel.friend_id], back_populates="friend"
     )
 
+    groupby = db.relationship("FriendGroupByModel", back_populates="user")
     # group relationship
     groups_owned = db.relationship(
         "GroupModel", foreign_keys=[GroupModel.owner_id], back_populates="owner"
@@ -50,7 +51,7 @@ class UserModel(BaseModel):
         self.password = pbkdf2_sha256.hash(input_pwd)
 
     def check_password(self, input_pwd):
-        return pbkdf2_sha256.verify(self.password, input_pwd)
+        return pbkdf2_sha256.verify(input_pwd,self.password)
 
     # @validates("email")
     # def validate_name(self, key, email):

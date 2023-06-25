@@ -1,15 +1,12 @@
 from flask.views import MethodView
+from flask_jwt_extended import current_user
 from flask_smorest import Blueprint, abort
-
-
 from app.models.user import UserModel
 from app.models.group import GroupModel, GroupApplyModel
-from flask_login import login_required, current_user, login_user
-
 from app.models import user_group_mapping
 from app.schemas.group import getGroupApplySchema, GroupApplySchema
 from flask import jsonify, request
-from app.extensions.login_ext import User
+
 
 groupblp = Blueprint("group", "group", url_prefix="/group")
 

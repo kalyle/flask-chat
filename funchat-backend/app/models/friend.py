@@ -68,7 +68,9 @@ class FriendModel(BaseModel):
         session.commit()
 
 
-class SortByGroupModel(BaseModel):
-    __tablename__ = 't_friend_sort_by_group'
+class FriendGroupByModel(db.Model):
+    __tablename__ = 'friend_groupby'
 
-    Column(String(100))
+    name = Column(String(100))
+    user_id = Column(ForeignKey("t_user.id"), primary_key=True)
+    user = db.relationship("UserModel", back_populates="groupby")

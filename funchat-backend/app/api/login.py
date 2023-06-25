@@ -1,21 +1,23 @@
 from flask.views import MethodView
-from flask_smorest import Blueprint
+from flask_smorest import Blueprint, abort
 from app.schemas.user import LoginSchema
 from app.schemas.user import UserSelfSchema
 from app.models.user import UserModel
-from flask_login import login_user
-
-from app.extensions.login_ext import User
+from app.models import db
+from flask_jwt_extended import create_access_token
 
 loginblp = Blueprint("login", "login", url_prefix="/login")
 
 
 @loginblp.route("")
 class Login(MethodView):
-    @loginblp.arguments(LoginSchema, location="form", as_kwargs=True)
+    @loginblp.arguments(
+        LoginSchema(session=db.session), location="json", as_kwargs=True
+    )
     @loginblp.response(200, UserSelfSchema)
     def post(self, **login_data):
-        user = UserModel.find_by_name(login_data["username"])
-        current_login_user = User(user.id)
-        login_user(current_login_user)
+        user = UserModel.query.filter_by(username=login_data["username"]).first()
+        if not user or not user.check_password(login_data["password"]):
+            abort(400)
+        user.token = create_access_token(user.id)
         return user

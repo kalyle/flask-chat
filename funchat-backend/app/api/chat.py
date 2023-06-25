@@ -1,3 +1,4 @@
+from flask import request
 from flask_socketio import (
     Namespace,
     ConnectionRefusedError,
@@ -5,23 +6,23 @@ from flask_socketio import (
     leave_room,
     emit,
 )
-from flask_login import current_user
-from flask import request
-from app.extensions.login_ext import User
+
+from app.models.user import UserModel
 from app.schemas.chat import FriendChatSchema, GroupChatSchema
 from app.models.chat import FriendChatRecordModel, GroupChatRecordModel
 from app.models.friend import FriendModel
 from app.models.group import GroupModel
-from utils.socketio import authenticated_only
 from app.extensions.reids import cache
+from flask_jwt_extended import jwt_required, get_jwt_identity, current_user
 import datetime
 
 
 class NotifyNamespace(Namespace):
-    # methodview decorator
-    # decorators = {"login_required": authenticated_only}
+    socket_user = None
 
+    @jwt_required
     def on_connect(self):
+        self.socket_user = UserModel.find_by_id(get_jwt_identity().get('id'))
         if not current_user.is_authenticated:
             raise ConnectionRefusedError('unauthorized!')
         else:
@@ -37,20 +38,19 @@ class NotifyNamespace(Namespace):
 
     def on_disconnect(self):
         self.leave_out()
-        cache.set_rem("global_online_users", current_user.id)
+        cache.set_rem("global_online_users", self.socket_user.id)
 
     @staticmethod
     def join_in():
-        user = User.request_user
         friend_online = []
-        for friend in user.friends:
-            join_room(NotifyNamespace.get_name(user.id, friend.id))
+        for friend in current_user.friends:
+            join_room(NotifyNamespace.get_name(current_user.id, friend.id))
             # 通知在线的朋友，你已上线（设置为需要上线通知，特别关心）,获取好友在线情况
             if cache.set_ismember("global_online_users", friend.id):
                 friend_online.append(friend.id)
                 NotifyNamespace.online_mark(to=friend.id, online=1, user=user.id)
-                if friend.setting.online_notice:
-                    emit("friend_online_notice", user, to=friend.id)
+                # if friend.setting.online_notice:
+                #     emit("friend_online_notice", user, to=friend.id)
 
         for group in user.groups:
             join_room(group.id)

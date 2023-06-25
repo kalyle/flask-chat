@@ -1,15 +1,14 @@
 from flask.views import MethodView
+from flask_jwt_extended import current_user
 from flask_smorest import Blueprint, abort
 from flask import jsonify, request
-
-from app.extensions.login_ext import User
+from app.extensions.socketio import socketio
 from app.models.friend import FriendModel
 from app.models.user import UserModel
 from app.schemas.friend import ApplySchema, getApplySchema
 from app.schemas.query import QuerySchema
-from flask_login import current_user, login_user
-
 from app.schemas.user import UserOtherSchema
+
 
 friendblp = Blueprint("friend", "friend", url_prefix="/friend")
 
@@ -21,9 +20,6 @@ class Friend(MethodView):
     )  # 按照组名\首字母 分组 默认按照首字母分组
     @friendblp.response(200, UserOtherSchema(many=True))
     def get(self, **query_dict):
-        #
-        login_user(User(1))
-        #
         user = UserModel.find_by_id(current_user.id)
         if query_dict["type"] == "name":
             # 按照姓名排序
@@ -55,9 +51,6 @@ class Friend(MethodView):
 class FriendApply(MethodView):
     @friendblp.response(200)
     def get(self):
-        #
-        login_user(User(1))
-        #
         # 自己发送的
         apply_from = FriendModel.find_by_limit({"user_id": current_user.id})
         apply_to = FriendModel.find_by_limit({"friend_id": current_user.id})
@@ -72,17 +65,16 @@ class FriendApply(MethodView):
     @friendblp.response(200, getApplySchema)
     # @login_user
     def post(self, new_data):
-        #
-        login_user(User(1))
-        #
         count = FriendModel.find_by_limit(new_data)
         if count:
             id = count[0].id
         else:
             id = FriendModel(**new_data).save_to_db()
         # emit apply msg
-        # emit(user,apply_response)
-        return FriendModel.find_by_id(id)
+        response = FriendModel.find_by_id(id)
+        print(id, response, response.friend_id)
+        socketio.emit("Apply", getApplySchema().dump(response), to=response.friend_id)
+        return response
 
 
 @friendblp.route("/apply/<apply_id>")
@@ -106,8 +98,9 @@ class FriendApplyById(MethodView):
             ).save_to_db()
         response = FriendModel.find_by_id(apply_id)
         # emit apply msg
-        # emit(user,apply_response)
-
+        socketio.emit(
+            "Apply", {"applyStatus": response.apply_status}, to=response.friend_id
+        )
         return response
 
     @friendblp.response(204)
@@ -142,3 +135,14 @@ class Histroy(MethodView):
 
     def delete(self, data):
         pass
+
+
+@friendblp.route("/search")
+class Search(MethodView):
+    @friendblp.response(200, UserOtherSchema(many=True))
+    def get(self):
+        data = request.args
+        users = UserModel.query.filter(
+            UserModel.username.like(f"{data['filterKey']}%")
+        ).all()
+        return users

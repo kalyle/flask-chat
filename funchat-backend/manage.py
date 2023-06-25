@@ -1,5 +1,6 @@
 import click
 from app import create_app
+from app.api.chat import NotifyNamespace
 from app.extensions.socketio import socketio
 
 
@@ -9,6 +10,7 @@ def runserver(p):
     app = create_app()
 
     socketio.init_app(app)
+    socketio.on_namespace(NotifyNamespace('/notify'))
     socketio.run(app, port=p)
 
 

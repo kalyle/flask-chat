@@ -1,4 +1,4 @@
-from flask_login import current_user
+from flask_jwt_extended import current_user
 from marshmallow_sqlalchemy import SQLAlchemySchema
 from app.models.friend import FriendModel
 from app.schemas.base import BaseSchema
@@ -14,7 +14,7 @@ class ApplySchema(SQLAlchemySchema):
 
     class Meta:
         model = FriendModel
-        # partial = True
+        partial = True
         # include = EXCLUDE
 
 

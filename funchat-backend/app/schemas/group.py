@@ -1,4 +1,3 @@
-from flask_login import current_user
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema
 from marshmallow import fields, post_dump
 
@@ -31,10 +30,10 @@ class getGroupApplySchema(SQLAlchemySchema, BaseSchema):
     class Meta:
         model = GroupApplyModel
 
-    @post_dump
-    def serializer(self, data, **kwargs):
-        if current_user.id == data["user"]["id"]:
-            del data["user"]
-        else:
-            del data["group"]
-        return data
+    # @post_dump
+    # def serializer(self, data, **kwargs):
+    #     if current_user.id == data["user"]["id"]:
+    #         del data["user"]
+    #     else:
+    #         del data["group"]
+    #     return data

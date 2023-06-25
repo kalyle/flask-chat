@@ -1,13 +1,13 @@
 from flask import Flask
 from flask_smorest import Api
 from flask_migrate import Migrate
-from flask_socketio import SocketIO
+from app.extensions.jwt_ext import jwt
 from app.models import db
 from app.schemas import ma
 from app.api import api_v1
 from flask_cors import CORS
 from app import settings
-from app.extensions.login_ext import login_manager
+from app.utils.before_request import authorization
 
 
 def create_app():
@@ -16,7 +16,7 @@ def create_app():
 
     api = Api()
     migrate = Migrate()
-    cors = CORS(resources={r"/*": {"origins": "*"}})
+    cors = CORS(resources={r"/*": {"origins": "*"}},supports_credentials=True)
 
     with app.app_context():
         cors.init_app(app)
@@ -27,12 +27,11 @@ def create_app():
         # ma
         ma.init_app(app)
         # cors
-        login_manager.init_app(app)
         # migrate
         migrate.init_app(app, db)
-
+        jwt.init_app(app)
         # socketio.init_app(app)
         # return socketio ，Error: A valid Flask application was not obtained from 'flaskchat-backend.app:create_app()'
-
+    app.before_request(authorization)
     api.register_blueprint(api_v1)
     return app

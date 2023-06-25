@@ -8,6 +8,9 @@ class ChatCache(object):
         )
 
     # string
+    def str_setex(self, key, val, expire):
+        self.redis.setex(key, val, expire)
+
     def str_incr(self, key, expire=None):
         self.redis.incr(key)
         if expire is not None:
