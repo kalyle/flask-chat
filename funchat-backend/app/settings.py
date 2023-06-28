@@ -10,6 +10,8 @@ class Config:
 
     JWT_SECRET_KEY = ""
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(days=1)
+    JWT_HEADER_NAME = "Authorization"
+    JWT_HEADER_TYPE = ""
     # 连接池
     # SQLALCHEMY_POOL_SIZE = 0
     # SQLALCHEMY_POOL_TIMEOUT = 0

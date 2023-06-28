@@ -1,14 +1,14 @@
 from flask.views import MethodView
-from flask_jwt_extended import current_user
 from flask_smorest import Blueprint, abort
 from flask import jsonify, request
+
 from app.extensions.socketio import socketio
 from app.models.friend import FriendModel
 from app.models.user import UserModel
 from app.schemas.friend import ApplySchema, getApplySchema
 from app.schemas.query import QuerySchema
 from app.schemas.user import UserOtherSchema
-
+from app.utils.before_request import current_user
 
 friendblp = Blueprint("friend", "friend", url_prefix="/friend")
 
@@ -61,9 +61,8 @@ class FriendApply(MethodView):
 
         return jsonify(response)
 
-    @friendblp.arguments(ApplySchema, location="json")
-    @friendblp.response(200, getApplySchema)
-    # @login_user
+    @friendblp.arguments(ApplySchema)
+    @friendblp.response(200)
     def post(self, new_data):
         count = FriendModel.find_by_limit(new_data)
         if count:
@@ -71,9 +70,10 @@ class FriendApply(MethodView):
         else:
             id = FriendModel(**new_data).save_to_db()
         # emit apply msg
-        response = FriendModel.find_by_id(id)
-        print(id, response, response.friend_id)
-        socketio.emit("Apply", getApplySchema().dump(response), to=response.friend_id)
+        apply = FriendModel.find_by_id(id)
+        print("friend_id", apply.friend_id, "user_id", current_user.id)
+        response = getApplySchema().dump(apply)
+        socketio.emit("friendApply", response, to=apply.friend_id, namespace="/notify")
         return response
 
 
@@ -96,12 +96,12 @@ class FriendApplyById(MethodView):
                 friend_id=data["user_id"],
                 apply_status=apply_status,
             ).save_to_db()
-        response = FriendModel.find_by_id(apply_id)
+        apply = FriendModel.find_by_id(apply_id)
         # emit apply msg
         socketio.emit(
-            "Apply", {"applyStatus": response.apply_status}, to=response.friend_id
+            "friendApply", {"applyStatus": apply.apply_status}, to=apply.friend_id
         )
-        return response
+        return apply
 
     @friendblp.response(204)
     def delete(self, apply_id):
@@ -141,6 +141,10 @@ class Histroy(MethodView):
 class Search(MethodView):
     @friendblp.response(200, UserOtherSchema(many=True))
     def get(self):
+        from flask_jwt_extended import get_jwt_identity
+
+        user = get_jwt_identity()
+        print("user", user)
         data = request.args
         users = UserModel.query.filter(
             UserModel.username.like(f"{data['filterKey']}%")

@@ -33,7 +33,7 @@ class getApplySchema(ApplySchema, BaseSchema):
 
     @post_dump
     def serializer(self, data, **kwargs):
-        if data['user_id'] == current_user.id:
+        if data['user_id'] == 9:
             data["fromApply"] = data["friend"]
         else:
             data["toApply"] = data["user"]
@@ -43,7 +43,7 @@ class getApplySchema(ApplySchema, BaseSchema):
 
     @pre_load
     def deserializer(self, data, **kwargs):
-        if data['user_id'] == current_user.id:
+        if data['user_id'] == 9:
             data["friend"] = data["fromApply"]
         else:
             data["user"] = data["toApply"]

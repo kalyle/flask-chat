@@ -17,8 +17,8 @@ class ChatCache(object):
             self.redis.expire(key, expire)
 
     # set
-    def set_add(self, key, *args):
-        return self.redis.sadd(key, args)
+    def set_add(self, key, val):
+        return self.redis.sadd(key, val)
 
     def set_rem(self, key, *args):
         return self.redis.srem(key, args)
@@ -33,7 +33,15 @@ class ChatCache(object):
     def set_members(self, key):
         return self.redis.smembers(key)
 
-    #
+    # hash
+    def hash_set(self, name, key, val):
+        self.redis.hset(name, key, val)
+
+    def hash_get(self, name, key):
+        return self.redis.hget(name, key)
+
+    def hash_del(self, name, *key):
+        self.redis.hdel(name, *key)
 
 
 cache = ChatCache()

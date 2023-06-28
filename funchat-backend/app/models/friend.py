@@ -11,7 +11,7 @@ class FriendModel(BaseModel):
     friend_id = Column(Integer, ForeignKey('t_user.id'))
 
     apply_note = Column(String(100), comment='申请留言')
-    apply_status = Column(SmallInteger, default=0)  # 已添加，已删除，已拉黑
+    apply_status = Column(SmallInteger, default=0)  # 已添加，已删除
     # setting
     # setting = db.relationship("SettingModel",backref="friend")
 
