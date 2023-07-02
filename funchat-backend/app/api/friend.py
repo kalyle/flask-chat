@@ -1,6 +1,7 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from flask import jsonify, request
+from flask import request
+from sqlalchemy import and_
 
 from app.extensions.socketio import socketio
 from app.models.friend import FriendModel
@@ -49,17 +50,15 @@ class Friend(MethodView):
 
 @friendblp.route("/apply")
 class FriendApply(MethodView):
-    @friendblp.response(200)
+    @friendblp.response(200, getApplySchema(many=True))
     def get(self):
         # 自己发送的
-        apply_from = FriendModel.find_by_limit({"user_id": current_user.id})
-        apply_to = FriendModel.find_by_limit({"friend_id": current_user.id})
-
-        response = {}
-        response["fromApply"] = getApplySchema(many=True).dump(apply_from)
-        response["toApply"] = getApplySchema(many=True).dump(apply_to)
-
-        return jsonify(response)
+        apply_list = FriendModel.query.filter_by(
+            user_id=current_user.id, apply_status=0).all()
+        val = FriendModel.query.filter_by(
+            friend_id=current_user.id, apply_status=0).all()
+        apply_list += val
+        return apply_list
 
     @friendblp.arguments(ApplySchema)
     @friendblp.response(200)
@@ -69,10 +68,10 @@ class FriendApply(MethodView):
             id = count[0].id
         else:
             id = FriendModel(**new_data).save_to_db()
-        # emit apply msg
+
         apply = FriendModel.find_by_id(id)
-        print("friend_id", apply.friend_id, "user_id", current_user.id)
         response = getApplySchema().dump(apply)
+        # emit apply msg
         socketio.emit("friendApply", response, to=apply.friend_id, namespace="/notify")
         return response
 
@@ -80,26 +79,27 @@ class FriendApply(MethodView):
 @friendblp.route("/apply/<apply_id>")
 class FriendApplyById(MethodView):
     @friendblp.response(200, getApplySchema)
-    def get(self, apply_id):
-        print("type", type(apply_id))
-        return FriendModel.find_by_id(apply_id)
-
-    @friendblp.arguments(ApplySchema, location="json", as_kwargs=True)
-    @friendblp.response(200, getApplySchema)
-    def patch(self, apply_id, **data):  # 这里路径参数 和 请求参数 顺序（如果是正常的，则路径参数在后？作为关键字参数，则在前？)
-        apply_status = data["apply_status"]
+    def patch(self, apply_id):  # 这里路径参数 和 请求参数 顺序（如果是正常的，则路径参数在后？作为关键字参数，则在前？)
+        data = {"apply_status":1}
         FriendModel.update_by_limit(apply_id, data)
-        if apply_status == 1:  # 同意
-            # 成为好友
-            FriendModel(
-                user_id=data["friend_id"],
-                friend_id=data["user_id"],
-                apply_status=apply_status,
-            ).save_to_db()
         apply = FriendModel.find_by_id(apply_id)
+        # 同意
+        fromMe = FriendModel.find_by_limit({"user_id": apply.friend_id,
+                                            "friend_id": apply.user_id,
+                                            }, many=False)
+        if not fromMe:
+            FriendModel(
+                user_id=apply.friend_id,
+                friend_id=apply.user_id,
+                apply_status=data["apply_status"],
+            ).save_to_db()
+        else:
+            FriendModel.update_by_limit(fromMe.id, data)
         # emit apply msg
         socketio.emit(
-            "friendApply", {"applyStatus": apply.apply_status}, to=apply.friend_id
+            "friendApply",
+            {"apply": [apply.id, fromMe.id] if fromMe else [apply], "applyStatus": apply.apply_status},
+            to=apply.friend_id
         )
         return apply
 
@@ -144,7 +144,6 @@ class Search(MethodView):
         from flask_jwt_extended import get_jwt_identity
 
         user = get_jwt_identity()
-        print("user", user)
         data = request.args
         users = UserModel.query.filter(
             UserModel.username.like(f"{data['filterKey']}%")

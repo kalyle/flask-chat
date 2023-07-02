@@ -36,7 +36,7 @@ def verify(token):
 def socket_auth(f):
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
-        token = socketio.server.token
+        token = getattr(socketio.server,"token")
         if not token:
             raise ConnectionRefusedError('authorized fail!')
         id = verify(token)

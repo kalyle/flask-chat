@@ -23,9 +23,9 @@ class BaseModel(db.Model):
         return cls.query.all()
 
     @classmethod
-    def find_by_limit(cls, find_data:dict):
+    def find_by_limit(cls, find_data:dict,many=True):
         data = cls.get_limits(cls, find_data)
-        return cls.query.filter_by(**data).all()
+        return cls.query.filter_by(**data).all() if many else cls.query.filter_by(**data).first()
 
     @classmethod
     def find_by_or_limit(cls, find_data):
