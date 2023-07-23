@@ -1,10 +1,10 @@
 from flask_socketio import Namespace, join_room, leave_room, emit, rooms
-from app.extensions.reids import cache
-from app.extensions.socketio import socketio
-from app.schemas.chat import FriendChatSchema, GroupChatSchema
-from app.models.chat import FriendChatRecordModel, GroupChatRecordModel
+from app.utils.reids import cache
+from app.extensions.init_ext import socketio
+from app.models.friend_chat_record import FriendChatRecordModel
+from app.models.group_chat_record import GroupChatRecordModel
 from app.models.friend import FriendModel
-from app.models.group import GroupModel
+from app.models.group_chat import GroupChatModel
 from app.utils.before_request import socket_auth, g, socket_user, verify
 
 import datetime
@@ -33,7 +33,6 @@ class NotifyNamespace(Namespace):
         return True
 
     def on_disconnect(self):
-
         self.leave_out()
         cache.set_rem("global_online_users", socket_user["id"])
         cache.hash_del("user_info", socket_user["id"])
@@ -64,7 +63,9 @@ class NotifyNamespace(Namespace):
         leave_room(socket_user["id"])
         for friend in socket_user["friends"]:
             leave_room(NotifyNamespace.get_name(socket_user["id"], friend["id"]))
-            NotifyNamespace.online_mark(to=friend["id"], online=0, user=socket_user["id"])
+            NotifyNamespace.online_mark(
+                to=friend["id"], online=0, user=socket_user["id"]
+            )
         for group in socket_user["groups"]:
             leave_room(group.id)
             NotifyNamespace.online_mark(to=group.name, online=0, user=socket_user["id"])
@@ -105,7 +106,7 @@ class ChatNamespace(Namespace):
             GroupChatRecordModel.query.filter(id=chat_id, read=False).update(
                 {"read": True}
             )
-            group = GroupModel.find_by_id(chat_id)
+            group = GroupChatModel.find_by_id(chat_id)
             room = group.name
 
         emit("msgRead", 200, to=room)

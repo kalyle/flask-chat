@@ -1,9 +1,8 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from flask import request
-from sqlalchemy import and_
 
-from app.extensions.socketio import socketio
+from app.extensions.init_ext import socketio
 from app.models.friend import FriendModel
 from app.models.user import UserModel
 from app.schemas.friend import ApplySchema, getApplySchema
@@ -52,11 +51,12 @@ class Friend(MethodView):
 class FriendApply(MethodView):
     @friendblp.response(200, getApplySchema(many=True))
     def get(self):
-        # 自己发送的
         apply_list = FriendModel.query.filter_by(
-            user_id=current_user.id, apply_status=0).all()
+            user_id=current_user.id, apply_status=0
+        ).all()
         val = FriendModel.query.filter_by(
-            friend_id=current_user.id, apply_status=0).all()
+            friend_id=current_user.id, apply_status=0
+        ).all()
         apply_list += val
         return apply_list
 
@@ -75,18 +75,32 @@ class FriendApply(MethodView):
         socketio.emit("friendApply", response, to=apply.friend_id, namespace="/notify")
         return response
 
+    @friendblp.response(204)
+    def delete(self):
+        data = request.get_json()
+        if not data['id']:
+            pass
+        else:
+            apply = FriendModel.find_by_id(data["id"])
+            apply.delete_from_db()
+        return {}
+
 
 @friendblp.route("/apply/<apply_id>")
 class FriendApplyById(MethodView):
     @friendblp.response(200, getApplySchema)
     def patch(self, apply_id):  # 这里路径参数 和 请求参数 顺序（如果是正常的，则路径参数在后？作为关键字参数，则在前？)
-        data = {"apply_status":1}
+        data = {"apply_status": 1}
         FriendModel.update_by_limit(apply_id, data)
         apply = FriendModel.find_by_id(apply_id)
         # 同意
-        fromMe = FriendModel.find_by_limit({"user_id": apply.friend_id,
-                                            "friend_id": apply.user_id,
-                                            }, many=False)
+        fromMe = FriendModel.find_by_limit(
+            {
+                "user_id": apply.friend_id,
+                "friend_id": apply.user_id,
+            },
+            many=False,
+        )
         if not fromMe:
             FriendModel(
                 user_id=apply.friend_id,
@@ -98,16 +112,13 @@ class FriendApplyById(MethodView):
         # emit apply msg
         socketio.emit(
             "friendApply",
-            {"apply": [apply.id, fromMe.id] if fromMe else [apply], "applyStatus": apply.apply_status},
-            to=apply.friend_id
+            {
+                "apply": [apply.id, fromMe.id] if fromMe else [apply],
+                "applyStatus": apply.apply_status,
+            },
+            to=apply.friend_id,
         )
         return apply
-
-    @friendblp.response(204)
-    def delete(self, apply_id):
-        apply = FriendModel.find_by_id(apply_id)
-        apply.delete_from_db()
-        return {}
 
 
 # @friendblp.route("<user_id>/SortByGroup")
@@ -127,7 +138,9 @@ class FriendApplyById(MethodView):
 
 #     @friendblp.response(200)
 #     def delete(self, user_id):
-#         return {}
+#         return {}8
+
+
 @friendblp.route("/history")
 class Histroy(MethodView):
     def get(self, **query_dict):

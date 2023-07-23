@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_smorest import Api
 from flask_migrate import Migrate
-from app.extensions.jwt_ext import jwt
 from app.models import db
 from app.schemas import ma
 from app.api import api_v1
@@ -9,6 +8,7 @@ from flask_cors import CORS
 from app import settings
 from app.utils.before_request import request_intercept
 from app.extensions.error_ext import handle_exception
+from app.extensions.jwt_ext import jwt
 
 
 def create_app():

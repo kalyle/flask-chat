@@ -2,19 +2,18 @@ from . import db
 from app.models.base import BaseModel
 from sqlalchemy import Column, Integer, String, ForeignKey, SmallInteger
 from sqlalchemy.orm import Session
+from app.models.global_setting import GlobalSettingModel
 
 
 class FriendModel(BaseModel):
-    __tablename__ = 't_friend'
+    __tablename__ = 'friend'
 
-    user_id = Column(Integer, ForeignKey('t_user.id'))
-    friend_id = Column(Integer, ForeignKey('t_user.id'))
-
-    apply_note = Column(String(100), comment='申请留言')
-    apply_status = Column(SmallInteger, default=0)  # 已添加，已删除
-    # setting
-    # setting = db.relationship("SettingModel",backref="friend")
-
+    user_id = Column(Integer, ForeignKey('user.id'))
+    friend_id = Column(Integer, ForeignKey('user.id'))
+    setting_id = Column(Integer, ForeignKey('global_setting.id'))
+    favorite = Column(Integer, default=0, comment="特别关心")
+    block = Column(Integer, default=0, comment="拉黑")
+    type = Column(Integer, comment="好友来源")
     # foreign_keys接受类型 字符串、列表、字典
     user = db.relationship(
         "UserModel", foreign_keys=[user_id], back_populates="friends"
@@ -22,6 +21,7 @@ class FriendModel(BaseModel):
     friend = db.relationship(
         "UserModel", foreign_keys=[friend_id], back_populates="friends_with_me"
     )
+    setting = db.relationship("GlobalSettingModel", backref="friend")
 
     # 适用于中间表
     @staticmethod
@@ -66,11 +66,3 @@ class FriendModel(BaseModel):
         )
         session.execute(sql)
         session.commit()
-
-
-class FriendGroupByModel(db.Model):
-    __tablename__ = 'friend_groupby'
-
-    name = Column(String(100))
-    user_id = Column(ForeignKey("t_user.id"), primary_key=True)
-    user = db.relationship("UserModel", back_populates="groupby")

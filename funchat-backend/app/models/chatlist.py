@@ -1,13 +1,15 @@
-from sqlalchemy import Column, SmallInteger, String, ForeignKey, Integer
+from sqlalchemy import Column, SmallInteger, String, ForeignKey, Integer, BigInteger
 from . import db
 
 
 class ChatListModel(db.Model):
-    __table_name__ = "chatList"
+    __tablename__ = "chat_list"
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(128))
     avatar = Column(String(128))
     content = Column(String(255))
-    chatTime = Column(String(128))
     type = Column(SmallInteger, default=0)
-    user_id = Column(ForeignKey("t_user"))
+    create_time = Column(BigInteger)
+    user_id = Column(ForeignKey("user"))
+    user = db.relationship("UserModel", backref="chat_lists")

@@ -5,7 +5,7 @@ from app.schemas.user import UserSelfSchema
 from app.models.user import UserModel
 from app.models import db
 from flask_jwt_extended import create_access_token
-from app.extensions.reids import cache
+from app.utils.reids import cache
 import json
 
 loginblp = Blueprint("login", "login", url_prefix="/login")

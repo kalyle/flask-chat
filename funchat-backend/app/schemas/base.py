@@ -37,10 +37,3 @@ class BaseSchema(ma.Schema):
     @post_dump
     def serializer(self, data, **kwargs):
         return self.snake_to_camel(data)
-
-
-class UserOtherSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = UserModel
-        load_instance = True
-        fields = ["id", "nickname", "avatar", "gender", "note"]

@@ -1,7 +1,7 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.extensions.reids import cache
+from app.utils.reids import cache
 
 
 logoutblp = Blueprint("logout", "logout", url_prefix="v1/logout")

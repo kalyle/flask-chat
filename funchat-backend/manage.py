@@ -1,11 +1,11 @@
 import click
 from app import create_app
 from app.api.chat import NotifyNamespace, ChatNamespace
-from app.extensions.socketio import socketio
+from app.extensions.init_ext import socketio
 
 
 @click.command()
-@click.option('-p', default=8000, help='run port')
+@click.option('-p', default=8000, help='run with socketio')
 def runserver(p):
     app = create_app()
 

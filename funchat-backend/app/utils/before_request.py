@@ -5,8 +5,8 @@ from flask import request, g
 from werkzeug.local import LocalProxy
 from flask.globals import request_ctx
 
-from app.extensions.reids import cache
-from app.extensions.socketio import socketio
+from app.utils.reids import cache
+from app.extensions.init_ext import socketio
 from app.models.user import UserModel
 from flask_jwt_extended import verify_jwt_in_request, utils
 
@@ -36,7 +36,7 @@ def verify(token):
 def socket_auth(f):
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
-        token = getattr(socketio.server,"token")
+        token = getattr(socketio.server, "token")
         if not token:
             raise ConnectionRefusedError('authorized fail!')
         id = verify(token)

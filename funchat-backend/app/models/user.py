@@ -1,43 +1,39 @@
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, BigInteger, ForeignKey
 
 from . import db
 from .base import BaseModel
 
 from passlib.hash import pbkdf2_sha256
 from app.models.friend import FriendModel
-from app.models.group import GroupModel
+from app.models.group_chat import GroupChatModel
 from app.models.user_group_mapping import user_group_mapping
-
-
+from app.models.info import InformationModel
+from app.models.user_tag_mapping import UserTagMappingModel
+from app.models.group import GroupModel
 class UserModel(BaseModel):
-    __tablename__ = 't_user'
+    __tablename__ = 'user'
 
-    username = Column(db.String(64))
-    password = Column(db.String(128), doc='密码')
-    nickname = Column(String(64))
-    avatar = Column(String(500), doc='用户头像图片')
-    gender = Column(Integer, doc='用户性别')
-    mobile = Column(String(11), doc='电话号码')
-    email = Column(String(100), doc='邮箱')
-    note = Column(String(500), doc='个性签名')
-    login_time = Column(db.DateTime, doc='登录时间')
-    is_active = Column(Integer)
-
-    # friend relationship
+    username = Column(String(64))
+    password = Column(String(128), comment='密码')
+    last_login_time = Column(BigInteger, comment='登录时间')
+    # relationship
+    information = db.relationship("InformationModel", back_populates="user", uselist=False)
+    # tags = db.relationship("UserTagMappingModel", primaryjoin='UserModel.id==UserTagMappingModel.tag_id',back_populates="user")
+    # friend
     friends = db.relationship(
         "FriendModel", foreign_keys=[FriendModel.user_id], back_populates="user"
     )
     friends_with_me = db.relationship(
         "FriendModel", foreign_keys=[FriendModel.friend_id], back_populates="friend"
     )
-
-    groupby = db.relationship("FriendGroupByModel", back_populates="user")
-    # group relationship
-    groups_owned = db.relationship(
-        "GroupModel", foreign_keys=[GroupModel.owner_id], back_populates="owner"
+    # group
+    groups = db.relationship("GroupModel", back_populates="user")
+    # group_chat
+    group_chats_owned = db.relationship(
+        "GroupChatModel", foreign_keys=[GroupChatModel.owner_id], back_populates="owner"
     )
-    groups = db.relationship(
-        "GroupModel", secondary=user_group_mapping, back_populates="members"
+    group_chats = db.relationship(
+        "GroupChatModel", secondary=user_group_mapping, back_populates="members"
     )
     # group apply
     group_apply_send = db.relationship("GroupApplyModel", back_populates="sender")
@@ -51,7 +47,7 @@ class UserModel(BaseModel):
         self.password = pbkdf2_sha256.hash(input_pwd)
 
     def check_password(self, input_pwd):
-        return pbkdf2_sha256.verify(input_pwd,self.password)
+        return pbkdf2_sha256.verify(input_pwd, self.password)
 
     # @validates("email")
     # def validate_name(self, key, email):

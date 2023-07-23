@@ -1,10 +1,8 @@
 from marshmallow_sqlalchemy import SQLAlchemySchema
 from app.models.friend import FriendModel
 from app.schemas.base import BaseSchema
-from app.schemas.user import UserOtherSchema
-from marshmallow import fields, EXCLUDE, post_dump, pre_load, pre_dump
-
-from app.utils.before_request import current_user
+from app.schemas.info import InfoOtherSchema
+from marshmallow import fields, EXCLUDE
 
 
 class ApplySchema(SQLAlchemySchema):
@@ -25,8 +23,8 @@ class postApplySchema(ApplySchema):
 
 
 class getApplySchema(ApplySchema, BaseSchema):
-    friend = fields.Nested(UserOtherSchema)
-    user = fields.Nested(UserOtherSchema)
+    friend = fields.Nested(InfoOtherSchema)
+    user = fields.Nested(InfoOtherSchema)
 
     class Meta:
         model = FriendModel
