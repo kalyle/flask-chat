@@ -19,3 +19,11 @@ class GroupChatRecordModel(BaseModel):
     )  # remote_side用于自关联设置
     sender = db.relationship("UserModel", backref="group_msg_send")
     group_chat = db.relationship("GroupChatModel", back_populates="group_msg_received")
+
+    def __repr__(self):
+        return "<%s(id=%s,sender=%s,group_chat=%s,)>" % (
+            self.__class__,
+            self.id,
+            self.sender_id,
+            self.group_chat_id,
+        )

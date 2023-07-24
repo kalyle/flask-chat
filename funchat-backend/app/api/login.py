@@ -1,6 +1,6 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from app.schemas.user import LoginSchema
+from app.schemas.login import LoginSchema
 from app.schemas.user import UserSelfSchema
 from app.models.user import UserModel
 from app.models import db

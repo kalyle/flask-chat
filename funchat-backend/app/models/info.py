@@ -20,3 +20,9 @@ class InformationModel(db.Model):
     hometown = Column(String(30))
 
     user = db.relationship("UserModel", back_populates="information")
+
+    def __repr__(self) -> str:
+        return "<%s(id=%s)>" % (
+            self.__class__,
+            self.id,
+        )

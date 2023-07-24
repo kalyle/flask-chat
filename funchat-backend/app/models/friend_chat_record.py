@@ -24,3 +24,12 @@ class FriendChatRecordModel(BaseModel):
         remote_side="[FriendChatRecordModel.id]",
         backref='children',
     )  # remote_side用于自关联设置
+
+    def __repr__(self):
+        return "<%s(id=%s,sender=%s,receiver=%s,content=%s)>" % (
+            self.__class__,
+            self.id,
+            self.sender_id,
+            self.receiver_id,
+            self.content,
+        )

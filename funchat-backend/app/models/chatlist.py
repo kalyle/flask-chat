@@ -13,3 +13,12 @@ class ChatListModel(db.Model):
     create_time = Column(BigInteger)
     user_id = Column(ForeignKey("user"))
     user = db.relationship("UserModel", backref="chat_lists")
+
+    def __repr__(self):
+        return "<%s(id=%s,name=%s,type=%s,user=%s)>" % (
+            self.__class__,
+            self.id,
+            self.name,
+            self.type,
+            self.user_id,
+        )

@@ -14,6 +14,14 @@ class FeedBackModel(BaseModel):
     feedback_type = relationship('FeedbackModel', backref="feedbacks")
     user = relationship('UserModel', backref="feedbacks")
 
+    def __repr__(self):
+        return "<%s(id=%s,title=%s,user=%s)>" % (
+            self.__class__,
+            self.id,
+            self.title,
+            self.user_id,
+        )
+
 
 class FeedbackTypeModel(BaseModel):
     __tablename__ = "feedback_type"

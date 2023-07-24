@@ -17,3 +17,11 @@ class GroupApplyModel(BaseModel):
         "GroupChatModel", back_populates="group_apply_received"
     )
     sender = db.relationship("UserModel", back_populates="group_apply_send")
+
+    def __repr__(self):
+        return "<%s(id=%s,sender=%s,group=%s)>" % (
+            self.__class__,
+            self.id,
+            self.sender_id,
+            self.group_id,
+        )

@@ -23,6 +23,14 @@ class FriendModel(BaseModel):
     )
     setting = db.relationship("GlobalSettingModel", backref="friend")
 
+    def __repr__(self):
+        return "<%s(id=%s,user=%s,friend=%s)>" % (
+            self.__class__,
+            self.id,
+            self.user_id,
+            self.friend_id,
+        )
+
     # 适用于中间表
     @staticmethod
     def do_find(user_id, friend_id):

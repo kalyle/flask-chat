@@ -10,6 +10,8 @@ from app.models.user_group_mapping import user_group_mapping
 from app.models.info import InformationModel
 from app.models.user_tag_mapping import UserTagMappingModel
 from app.models.group import GroupModel
+
+
 class UserModel(BaseModel):
     __tablename__ = 'user'
 
@@ -17,7 +19,9 @@ class UserModel(BaseModel):
     password = Column(String(128), comment='密码')
     last_login_time = Column(BigInteger, comment='登录时间')
     # relationship
-    information = db.relationship("InformationModel", back_populates="user", uselist=False)
+    information = db.relationship(
+        "InformationModel", back_populates="user", uselist=False
+    )
     # tags = db.relationship("UserTagMappingModel", primaryjoin='UserModel.id==UserTagMappingModel.tag_id',back_populates="user")
     # friend
     friends = db.relationship(
@@ -37,6 +41,13 @@ class UserModel(BaseModel):
     )
     # group apply
     group_apply_send = db.relationship("GroupApplyModel", back_populates="sender")
+
+    def __repr__(self):
+        return "<%s(id=%s,username=%s)>" % (
+            self.__class__,
+            self.id,
+            self.username,
+        )
 
     @property
     def password_salt(self):

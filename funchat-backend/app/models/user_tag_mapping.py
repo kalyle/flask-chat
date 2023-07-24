@@ -18,3 +18,11 @@ class UserTagMappingModel(db.Model):
     liked_by = db.relationship(
         "UserModel", foreign_keys=[liked_by_id], backref="tag_liked_by"
     )
+
+    def __repr__(self) -> str:
+        return "<%s(tag=%s,user=%s,liked_by=%s)>" % (
+            self.__class__,
+            self.tag_id,
+            self.user_id,
+            self.liked_by_id,
+        )

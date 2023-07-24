@@ -32,6 +32,9 @@ class GroupChatModel(BaseModel):
     )
     setting = db.relationship("GlobalSettingModel", backref="group_chat")
 
+    def __repr__(self):
+        return "<%s(id=%s,name=%s)>" % (self.__class__, self.id, self.name)
+
     @classmethod
     def find_group_in_charge(cls):
         # 获取群申请的群主
