@@ -1,8 +1,8 @@
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+from app.schemas import ma
 from app.models.group import GroupModel
 
 
-class GroupSchema(SQLAlchemyAutoSchema):
+class GroupSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = GroupModel
         load_instance = True

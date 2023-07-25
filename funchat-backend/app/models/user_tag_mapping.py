@@ -1,18 +1,19 @@
-from sqlalchemy import Column, Integer, ForeignKey, BigInteger
+from sqlalchemy.orm import Query
+from sqlalchemy import Column, Integer, ForeignKey, BigInteger,String
 
 from . import db
 from .base import BaseModel
 from app.models.tag import TagModel
 
 
-class UserTagMappingModel(db.Model):
+class UserTagMappingModel(BaseModel):
+    query: Query
     __tablename__ = 'user_tag_mapping'
 
     tag_id = Column(Integer, ForeignKey('tag.id'), primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
     liked_by_id = Column(Integer, ForeignKey('user.id'))
-    create_time = Column(BigInteger)
-    update_time = Column(BigInteger)
+    images = Column(String(255))
     tag = db.relationship("TagModel", backref="user_tag_mapping")
     user = db.relationship("UserModel", foreign_keys=[user_id], backref="tags")
     liked_by = db.relationship(
@@ -26,3 +27,7 @@ class UserTagMappingModel(db.Model):
             self.user_id,
             self.liked_by_id,
         )
+
+    @classmethod
+    def find_all_by_user(cls,user_id):
+        return cls.query.filter_by(user_id=user_id).all()

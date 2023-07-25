@@ -1,9 +1,9 @@
-from sqlalchemy import Column, String, BigInteger, ForeignKey
+from passlib.handlers.pbkdf2 import pbkdf2_sha256
+from sqlalchemy import Column, String, BigInteger
 
 from . import db
 from .base import BaseModel
 
-from passlib.hash import pbkdf2_sha256
 from app.models.friend import FriendModel
 from app.models.group_chat import GroupChatModel
 from app.models.user_group_mapping import user_group_mapping
@@ -49,17 +49,9 @@ class UserModel(BaseModel):
             self.username,
         )
 
-    @property
-    def password_salt(self):
-        pass
-
-    @password_salt.setter
-    def password_salt(self, input_pwd):
-        self.password = pbkdf2_sha256.hash(input_pwd)
-
-    def check_password(self, input_pwd):
-        return pbkdf2_sha256.verify(input_pwd, self.password)
-
+    @staticmethod
+    def check_password(password, password2):
+        return pbkdf2_sha256.verify(password2, password)
     # @validates("email")
     # def validate_name(self, key, email):
     #     if re.match("", email):

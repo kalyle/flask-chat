@@ -7,7 +7,7 @@ from app.models.friend import FriendModel
 from app.models.user import UserModel
 from app.schemas.friend import ApplySchema, getApplySchema
 from app.schemas.query import QuerySchema
-from app.schemas.user import UserOtherSchema
+from app.schemas.info import InfoOtherSchema
 from app.utils.before_request import current_user
 
 friendblp = Blueprint("friend", "friend", url_prefix="/friend")
@@ -18,7 +18,7 @@ class Friend(MethodView):
     @friendblp.arguments(
         QuerySchema, location="query", as_kwargs=True
     )  # 按照组名\首字母 分组 默认按照首字母分组
-    @friendblp.response(200, UserOtherSchema(many=True))
+    @friendblp.response(200, InfoOtherSchema(many=True))
     def get(self, **query_dict):
         user = UserModel.find_by_id(current_user.id)
         if query_dict["type"] == "name":
@@ -152,7 +152,7 @@ class Histroy(MethodView):
 
 @friendblp.route("/search")
 class Search(MethodView):
-    @friendblp.response(200, UserOtherSchema(many=True))
+    @friendblp.response(200, InfoOtherSchema(many=True))
     def get(self):
         from flask_jwt_extended import get_jwt_identity
 

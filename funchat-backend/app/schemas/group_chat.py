@@ -1,4 +1,4 @@
-from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema
+from app.schemas import ma
 from marshmallow import fields
 
 from app.models.group_apply import GroupApplyModel
@@ -7,7 +7,7 @@ from app.schemas.base import BaseSchema
 from app.schemas.info import InfoOtherSchema
 
 
-class GroupChatSchema(SQLAlchemyAutoSchema):
+class GroupChatSchema(ma.SQLAlchemyAutoSchema):
     owner = fields.Nested(InfoOtherSchema)
     members = fields.Nested(InfoOtherSchema, many=True)
 
@@ -19,7 +19,7 @@ class GroupChatSchema(SQLAlchemyAutoSchema):
         fields = ["id", "name", "avatar", "desc", "member_count", "owner", "members"]
 
 
-class getGroupApplySchema(SQLAlchemySchema, BaseSchema):
+class getGroupApplySchema(ma.SQLAlchemySchema, BaseSchema):
     group = fields.Nested(GroupChatModel)
 
     class Meta:

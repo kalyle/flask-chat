@@ -1,11 +1,12 @@
-from marshmallow_sqlalchemy import SQLAlchemySchema
+
 from app.models.friend import FriendModel
 from app.schemas.base import BaseSchema
 from app.schemas.info import InfoOtherSchema
 from marshmallow import fields, EXCLUDE
+from app.schemas import  ma
 
 
-class ApplySchema(SQLAlchemySchema):
+class ApplySchema(ma.SQLAlchemySchema):
     user_id = fields.Integer()
     friend_id = fields.Integer()
     apply_note = fields.String()

@@ -1,9 +1,6 @@
 import re
 from . import ma
 from marshmallow import fields, post_dump, pre_load
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-
-from app.models.user import UserModel
 
 
 class BaseSchema(ma.Schema):

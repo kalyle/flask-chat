@@ -1,10 +1,10 @@
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+from app.schemas import ma
 from app.schemas.base import BaseSchema
 from marshmallow import fields, ValidationError, validates_schema, EXCLUDE
 from app.models.user import UserModel
 
 
-class LoginSchema(SQLAlchemyAutoSchema, BaseSchema):
+class LoginSchema(ma.SQLAlchemyAutoSchema, BaseSchema):
     verify_code = fields.Str(allow_none=False)
 
     class Meta:

@@ -1,17 +1,19 @@
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
-from marshmallow import fields, ValidationError, validates_schema, EXCLUDE
-from app.models.user import UserModel
+from marshmallow import fields, ValidationError, validates_schema, EXCLUDE,post_load
+from passlib.handlers.pbkdf2 import pbkdf2_sha256
 
+from app.models.user import UserModel
+from app.schemas import ma
 from app.schemas.info import InfoSelfSchema
 
 
-class RegisterSchema(SQLAlchemyAutoSchema):
-    information = InfoSelfSchema()
-    password2 = fields.Str(load_only=True)
+class RegisterSchema(ma.SQLAlchemyAutoSchema):
+    information = ma.Nested(InfoSelfSchema, exclude=("user",))
+    password2 = ma.Str()
 
     class Meta:
         model = UserModel
-        fields = ("username", "password", "information")
+        fields = ("username", "password", "password2", "information")
+        load_only = ("password","password2")
         load_instance = True
         partial = True
         unknown = EXCLUDE
@@ -20,9 +22,16 @@ class RegisterSchema(SQLAlchemyAutoSchema):
     def validate(self, data, **kwargs):
         if data["password"] != data["password2"]:
             raise ValidationError("密码输入错误")
-        data["username"] = data["information"]["mobile"]
+        data["username"] = getattr(data["information"], "mobile")
         del data["password2"]
         return data
+
+    @post_load
+    def deserializer(self,data,**kwargs):
+        data["password"] = pbkdf2_sha256.hash(data["password"])
+        return data
+
+
 
     # @validates("email")  # 验证单个字段
     # def validate_email(self, email):
