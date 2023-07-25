@@ -20,7 +20,15 @@ class UserSelfSchema(ma.SQLAlchemyAutoSchema, BaseSchema):
         model = UserModel
         load_instance = True
         unknown = INCLUDE
-        fields = ("id", "username", "information", "friends", "groups", "group_chats", "token")
+        fields = (
+            "id",
+            "username",
+            "information",
+            "friends",
+            "groups",
+            "group_chats",
+            "token",
+        )
         ordered = True
 
 
@@ -32,6 +40,7 @@ class UserOtherSchema(ma.SQLAlchemyAutoSchema, BaseSchema):
         load_instance = True
         unknown = INCLUDE
         fields = ("information",)
+
     @post_dump
     def serializer(self, data, **kwargs):
         info = data["information"]
@@ -42,5 +51,7 @@ class UserOtherSchema(ma.SQLAlchemyAutoSchema, BaseSchema):
         real_data = {}
         real_data["information"] = data
         return real_data
+
+
 # SQLAlchemyAutoSchema back_populates会加载，使用backref会加载？
 # partial = True  #SQLAlchemyAutoSchema中不能使用

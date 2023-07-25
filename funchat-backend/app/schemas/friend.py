@@ -1,9 +1,8 @@
-
 from app.models.friend import FriendModel
 from app.schemas.base import BaseSchema
 from app.schemas.info import InfoOtherSchema
 from marshmallow import fields, EXCLUDE
-from app.schemas import  ma
+from app.schemas import ma
 
 
 class ApplySchema(ma.SQLAlchemySchema):

@@ -1,4 +1,4 @@
-from marshmallow import fields, ValidationError, validates_schema, EXCLUDE,post_load
+from marshmallow import fields, ValidationError, validates_schema, EXCLUDE, post_load
 from passlib.handlers.pbkdf2 import pbkdf2_sha256
 
 from app.models.user import UserModel
@@ -13,7 +13,7 @@ class RegisterSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = UserModel
         fields = ("username", "password", "password2", "information")
-        load_only = ("password","password2")
+        load_only = ("password", "password2")
         load_instance = True
         partial = True
         unknown = EXCLUDE
@@ -27,11 +27,9 @@ class RegisterSchema(ma.SQLAlchemyAutoSchema):
         return data
 
     @post_load
-    def deserializer(self,data,**kwargs):
+    def deserializer(self, data, **kwargs):
         data["password"] = pbkdf2_sha256.hash(data["password"])
         return data
-
-
 
     # @validates("email")  # 验证单个字段
     # def validate_email(self, email):

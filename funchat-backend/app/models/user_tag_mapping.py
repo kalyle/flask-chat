@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Query
-from sqlalchemy import Column, Integer, ForeignKey, BigInteger,String
+from sqlalchemy import Column, Integer, ForeignKey, BigInteger, String
 
 from . import db
 from .base import BaseModel
@@ -7,7 +7,6 @@ from app.models.tag import TagModel
 
 
 class UserTagMappingModel(BaseModel):
-    query: Query
     __tablename__ = 'user_tag_mapping'
 
     tag_id = Column(Integer, ForeignKey('tag.id'), primary_key=True)
@@ -29,5 +28,5 @@ class UserTagMappingModel(BaseModel):
         )
 
     @classmethod
-    def find_all_by_user(cls,user_id):
+    def find_all_by_user(cls, user_id):
         return cls.query.filter_by(user_id=user_id).all()
