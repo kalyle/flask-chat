@@ -7,7 +7,7 @@ Create Date: 2023-07-23 22:19:52.430585
 """
 from alembic import op
 import sqlalchemy as sa
-
+from passlib.handlers.pbkdf2 import pbkdf2_sha256
 
 # revision identifiers, used by Alembic.
 revision = '799df4ffc52a'
@@ -76,3 +76,6 @@ def downgrade():
     op.drop_table('group_apply')
     op.drop_table('user_tag_mapping')
     # ### end Alembic commands ###
+
+# def default():
+#     op.bulk_insert("user",[{"id":-1,"username":"admin","password":pbkdf2_sha256.hash("123456")}])
