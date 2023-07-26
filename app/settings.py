@@ -28,7 +28,7 @@ class DevConfig(Config):
     MYSQL_PORT = int(os.getenv("MYSQL_PORT") or "3306")
     MYSQL_USERNAME = os.getenv("MYSQL_USERNAME") or "root"
     MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD") or "root"
-    MYSQL_DATABASE = os.getenv("MYSQL_DATABASE") or "flaskchat"
+    MYSQL_DATABASE = os.getenv("MYSQL_DATABASE") or "funchat"
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USERNAME}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
 
     SQLALCHEMY_ECHO = False
