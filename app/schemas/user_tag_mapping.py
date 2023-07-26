@@ -8,7 +8,7 @@ from app.schemas.user import UserOtherSchema
 
 
 class UserTagMappingSchema(ma.SQLAlchemyAutoSchema, BaseSchema):
-    tag = ma.Nested(TagSchema(exclude=("created_by")))
+    tag = ma.Nested(TagSchema, exclude=("created_by",))
     liked_by = ma.Nested(UserOtherSchema(many=True))
 
     class Meta:

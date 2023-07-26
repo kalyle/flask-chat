@@ -7,7 +7,6 @@ from .base import BaseModel
 from sqlalchemy import Column, String, Integer
 
 
-
 class TagModel(BaseModel):
     __tablename__ = 'tag'
 
@@ -16,8 +15,9 @@ class TagModel(BaseModel):
     created_by = Column(Integer)
 
     def __repr__(self):
-        return "<%s(name=%s,created_by=%s)>" % (
+        return "<%s(id=%s,name=%s,created_by=%s)>" % (
             self.__class__,
+            self.id,
             self.name,
             self.created_by,
         )
