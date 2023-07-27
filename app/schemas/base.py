@@ -4,7 +4,7 @@ from marshmallow import fields, post_dump, pre_load
 
 
 class BaseSchema(ma.Schema):
-    id = fields.Integer()
+    id = fields.Integer(dump_only=True)
     create_time = fields.Time(dump_only=True)
     update_time = fields.Time(dump_only=True)
     status = fields.Integer(dump_only=True, default=0)
