@@ -14,8 +14,7 @@ tagblp = Blueprint("tag", "tag", url_prefix="/tag")
 class Tag(MethodView):
     @tagblp.response(200, TagSchema(many=True, exclude=("created_by",)))
     def get(self):
-        tags = TagModel.find_tags()
-        return tags
+        return TagModel.find_tags()
 
     @tagblp.arguments(TagSchema)
     @tagblp.response(200, TagSchema)
