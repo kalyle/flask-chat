@@ -50,7 +50,7 @@ class UserOtherSchema(ma.SQLAlchemyAutoSchema, BaseSchema):
     def deserializer(self, data, **kwargs):
         real_data = {}
         real_data["information"] = data
-        return real_data
+        return super(UserOtherSchema,self).deserializer(real_data,**kwargs)
 
 
 # SQLAlchemyAutoSchema back_populates会加载，使用backref会加载？

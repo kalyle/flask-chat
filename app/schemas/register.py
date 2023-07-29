@@ -29,7 +29,7 @@ class RegisterSchema(ma.SQLAlchemyAutoSchema):
     @post_load
     def deserializer(self, data, **kwargs):
         data["password"] = pbkdf2_sha256.hash(data["password"])
-        return data
+        return super(RegisterSchema,self).deserializer(data,**kwargs)
 
     # @validates("email")  # 验证单个字段
     # def validate_email(self, email):
