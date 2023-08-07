@@ -33,8 +33,8 @@ def create_app():
         jwt.init_app(app)
         # socketio.init_app(app)
         # return socketio ，Error: A valid Flask application was not obtained from 'flaskchat-backend.app:create_app()'
-    app.before_request(request_intercept)
     api.register_blueprint(api_v1)
-    app.errorhandler(Exception)(handle_exception)
+    app.before_request(request_intercept)
 
+    app.errorhandler(Exception)(handle_exception)
     return app
