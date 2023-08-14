@@ -16,12 +16,9 @@ def runserver(host, port):
     app = create_app()
 
     socketio.init_app(app)
-    socketio.on_namespace(NotifyNamespace('/notify'))
+    socketio.on_namespace(NotifyNamespace('/'))
     socketio.on_namespace(ChatNamespace('/chat'))
     socketio.run(app, host=host, port=port, use_reloader=False)
-
-
-# 'SocketIO' object has no attribute 'cli' 不能使用FlaskGroup
 
 
 if __name__ == "__main__":

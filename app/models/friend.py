@@ -1,6 +1,6 @@
 from . import db
 from app.models.base import BaseModel
-from sqlalchemy import Column, Integer, String, ForeignKey, SmallInteger
+from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import Session
 from app.models.global_setting import GlobalSettingModel
 
@@ -32,45 +32,45 @@ class FriendModel(BaseModel):
         )
 
     # 适用于中间表
-    @staticmethod
-    def do_find(user_id, friend_id):
-        session: Session = db.session
-        query = FriendModel.select().where(
-            (FriendModel.c.get("user_id") == user_id)
-            & (FriendModel.c.get("friend_id") == friend_id)
-        )
+    # @staticmethod
+    # def do_find(user_id, friend_id):
+    #     session: Session = db.session
+    #     query = FriendModel.select().where(
+    #         (FriendModel.c.get("user_id") == user_id)
+    #         & (FriendModel.c.get("friend_id") == friend_id)
+    #     )
 
-        result = session.execute(query)
-        return result.fetchall()
+    #     result = session.execute(query)
+    #     return result.fetchall()
 
-    @staticmethod
-    def do_update(user_id, friend_id, update_data: dict):
-        session: Session = db.session
-        sql = (
-            FriendModel.select()
-            .where(
-                (FriendModel.c.get("user_id") == user_id)
-                & (FriendModel.c.get("friend_id") == friend_id)
-            )
-            .values(**update_data)
-        )
-        session.execute(sql)
-        session.commit()
+    # @staticmethod
+    # def do_update(user_id, friend_id, update_data: dict):
+    #     session: Session = db.session
+    #     sql = (
+    #         FriendModel.select()
+    #         .where(
+    #             (FriendModel.c.get("user_id") == user_id)
+    #             & (FriendModel.c.get("friend_id") == friend_id)
+    #         )
+    #         .values(**update_data)
+    #     )
+    #     session.execute(sql)
+    #     session.commit()
 
-    @staticmethod
-    def do_insert(insert_data: dict):
-        session: Session = db.session
+    # @staticmethod
+    # def do_insert(insert_data: dict):
+    #     session: Session = db.session
 
-        sql = FriendModel.insert().values(**insert_data)
-        session.execute(sql)
-        session.commit()
+    #     sql = FriendModel.insert().values(**insert_data)
+    #     session.execute(sql)
+    #     session.commit()
 
-    @staticmethod
-    def do_delete(user_id, friend_id):
-        session: Session = db.session
-        sql = FriendModel.delete().where(
-            (FriendModel.c.get("user_id") == user_id)
-            & (FriendModel.c.get("friend_id") == friend_id)
-        )
-        session.execute(sql)
-        session.commit()
+    # @staticmethod
+    # def do_delete(user_id, friend_id):
+    #     session: Session = db.session
+    #     sql = FriendModel.delete().where(
+    #         (FriendModel.c.get("user_id") == user_id)
+    #         & (FriendModel.c.get("friend_id") == friend_id)
+    #     )
+    #     session.execute(sql)
+    #     session.commit()

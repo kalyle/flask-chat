@@ -5,7 +5,7 @@ from app.models.user import UserModel
 from app.models.user_tag_mapping import UserTagMappingModel
 from app.schemas.tag import TagSchema
 from app.schemas.user_tag_mapping import UserTagMappingSchema
-from app.utils.before_request import current_user
+from flask_login import current_user, login_required
 
 tagblp = Blueprint("tag", "tag", url_prefix="/tag")
 
@@ -18,12 +18,14 @@ class Tag(MethodView):
 
     @tagblp.arguments(TagSchema)
     @tagblp.response(200, TagSchema)
+    @login_required
     def post(self, new_data: TagModel):
         id = new_data.save_to_db()
         return TagModel.find_by_id(id)
 
     @tagblp.arguments(TagSchema)
     @tagblp.response(204)
+    @login_required
     def delete(self, new_data: TagModel):
         new_data.delete_from_db()
         return
@@ -38,6 +40,7 @@ class UserTag(MethodView):
 
     @tagblp.arguments(TagSchema(many=True))
     @tagblp.response(200, UserTagMappingSchema(many=True))
+    @login_required
     def post(self, new_data, user_id):
         for tag in new_data:
             ut = UserTagMappingModel()
@@ -52,6 +55,7 @@ class UserTag(MethodView):
 class UserTagById(MethodView):
     @tagblp.arguments(UserTagMappingSchema)
     @tagblp.response(200, UserTagMappingSchema)
+    @login_required
     def patch(self, new_data: UserTagMappingModel, tag_id):
         # 修改内容,上传图片
 
@@ -59,6 +63,7 @@ class UserTagById(MethodView):
 
     @tagblp.arguments(UserTagMappingSchema)
     @tagblp.response(204)
+    @login_required
     def delete(self, new_data: UserTagMappingModel, tag_id):
         if new_data.id != tag_id:
             abort("参数错误")
@@ -85,6 +90,7 @@ class UserTagLike(MethodView):
         ]
 
     @tagblp.response(200, UserTagMappingSchema(many=True))
+    @login_required
     def post(self, tag_id):
         # 他人点赞
         ut = UserTagMappingModel.find_by_id(tag_id)

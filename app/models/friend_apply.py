@@ -1,6 +1,7 @@
 from app.models.base import BaseModel
 from sqlalchemy import Column, Integer, String, ForeignKey, SmallInteger
 from app.models import db
+from flask_login import current_user
 
 
 class FriendApplyModel(BaseModel):
@@ -25,3 +26,17 @@ class FriendApplyModel(BaseModel):
             self.user_id,
             self.friend_id,
         )
+
+    @classmethod
+    def find_send_from_me(cls):
+        return cls.query.filter_by(user_id=current_user.id, apply_status=0).all()
+
+    @classmethod
+    def find_send_to_me(cls):
+        return cls.query.filter_by(friend_id=current_user.id, apply_status=0).all()
+
+    @classmethod
+    def is_exist(cls, sender: int):
+        return cls.query.filter_by(
+            user_id=current_user.id, friend_id=sender, apply_status=0
+        ).first()

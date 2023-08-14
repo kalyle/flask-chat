@@ -34,5 +34,4 @@ class TagModel(BaseModel):
             session.commit()
             return self.id
         except Exception as e:
-            # logger
             session.rollback()

@@ -12,6 +12,13 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(days=1)
     JWT_HEADER_NAME = "Authorization"
     JWT_HEADER_TYPE = ""
+
+    # session
+    SECRET_KEY = 'top-secret!'
+    SESSION_TYPE = "filesystem"
+    # SESSION_COOKIE_NAME = "funchat"
+    # SESSION_COOKIE_HTTPONLY = False
+    # SESSION_COOKIE_DOMAIN = False
     # 连接池
     # SQLALCHEMY_POOL_SIZE = 0
     # SQLALCHEMY_POOL_TIMEOUT = 0
@@ -49,4 +56,3 @@ class DevConfig(Config):
     OPENAPI_SWAGGER_UI_URL = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     OPENAPI_RAPIDOC_PATH = "/rapidoc"
     OPENAPI_RAPIDOC_URL = "https://unpkg.com/rapidoc/dist/rapidoc-min.js"
-    print(MYSQL_HOST, MYSQL_PORT)

@@ -2,12 +2,11 @@ from flask import request
 from flask.views import MethodView
 from flask_jwt_extended import create_access_token
 from flask_smorest import Blueprint, abort
-
+from flask_login import current_user, login_required
 from app.schemas.register import RegisterSchema
-from app.schemas.info import InfoSelfSchema,InfoOtherSchema
+from app.schemas.info import InfoSelfSchema, InfoOtherSchema
 from app.models.user import UserModel
 from app.schemas.user import UserSelfSchema
-from app.utils.before_request import current_user
 
 accountblp = Blueprint("account", "account", url_prefix="/account")
 
@@ -27,7 +26,6 @@ class Register(MethodView):
 class Info(MethodView):
     @accountblp.response(200)
     def get(self, user_id):
-        # 获取指定user info
         user = UserModel.find_by_id(user_id)
         if user.id == current_user.id:
             response = InfoSelfSchema().dump(user.information)
@@ -37,14 +35,21 @@ class Info(MethodView):
 
     @accountblp.arguments(InfoSelfSchema)
     @accountblp.response(200, InfoSelfSchema)
+    @login_required
     def patch(self, new_data: UserModel, user_id):
-        if int(user_id) == current_user.id:
-            UserModel.update_by_limit(user_id, new_data.__dict__)
-            return UserModel.find_by_id(user_id)
-        else:
+        if int(user_id) != current_user.id:
             abort(400)
+        new_data_dict = vars(new_data)
+        user = UserModel.find_by_id(user_id)
+        for key, val in new_data_dict.items():
+            if key == id or "sa_instance":
+                continue
+            setattr(user.information, key, val)
+        user.save_to_db()
+        return UserModel.find_by_id(user_id)
 
 
+#########
 @accountblp.route("/password/reset")
 class PasswordReset(MethodView):
     @accountblp.arguments(InfoSelfSchema, location="json")

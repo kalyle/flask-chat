@@ -1,17 +1,15 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.utils.reids import cache
+from flask_login import logout_user, login_required, current_user
 
 
-logoutblp = Blueprint("logout", "logout", url_prefix="v1/logout")
+logoutblp = Blueprint("logout", "logout", url_prefix="/logout")
 
 
 @logoutblp.route("")
 class Logout(MethodView):
     @logoutblp.response(200)
-    @jwt_required
+    @login_required
     def post(self):
-        user_id = get_jwt_identity()
-        cache.hash_del("user_info", user_id)
+        logout_user(current_user)
         return {}

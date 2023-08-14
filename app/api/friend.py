@@ -1,14 +1,15 @@
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
-from flask import request
 
 from app.extensions.init_ext import socketio
-from app.models.friend import FriendModel
+from app.models.friend_apply import FriendApplyModel
 from app.models.user import UserModel
+from app.models.group import GroupModel
+from app.schemas.group import GroupSchema
 from app.schemas.friend import ApplySchema, getApplySchema
 from app.schemas.query import QuerySchema
 from app.schemas.info import InfoOtherSchema
-from app.utils.before_request import current_user
+from flask_login import current_user, login_required
 
 friendblp = Blueprint("friend", "friend", url_prefix="/friend")
 
@@ -51,45 +52,31 @@ class Friend(MethodView):
 class FriendApply(MethodView):
     @friendblp.response(200, getApplySchema(many=True))
     def get(self):
-        apply_list = FriendModel.query.filter_by(
-            user_id=current_user.id, apply_status=0
-        ).all()
-        val = FriendModel.query.filter_by(
-            friend_id=current_user.id, apply_status=0
-        ).all()
-        apply_list += val
-        return apply_list
+        apply_list = []
+        send_from_me = FriendApplyModel.find_send_from_me()
+        send_to_me = FriendApplyModel.find_send_to_me()
+        apply_list += send_from_me + send_to_me
+        return sorted(apply_list, lambda apply: apply.create_time)
 
     @friendblp.arguments(ApplySchema)
     @friendblp.response(200)
-    def post(self, new_data):
-        count = FriendModel.find_by_limit(new_data)
-        if count:
-            id = count[0].id
+    def post(self, new_data: FriendApplyModel):
+        exist = FriendApplyModel.is_exist()
+        if exist:
+            id = exist.id
         else:
-            id = FriendModel(**new_data).save_to_db()
-
-        apply = FriendModel.find_by_id(id)
-        response = getApplySchema().dump(apply)
+            id = new_data.save_to_db()
+        response = getApplySchema().dump(FriendApplyModel.find_by_id(id))
         # emit apply msg
-        socketio.emit("friendApply", response, to=apply.friend_id, namespace="/notify")
+        socketio.emit("friendApply", response, to=id, namespace="/")
         return response
-
-    @friendblp.response(204)
-    def delete(self):
-        data = request.get_json()
-        if not data['id']:
-            pass
-        else:
-            apply = FriendModel.find_by_id(data["id"])
-            apply.delete_from_db()
-        return {}
 
 
 @friendblp.route("/apply/<apply_id>")
 class FriendApplyById(MethodView):
     @friendblp.response(200, getApplySchema)
-    def patch(self, apply_id):  # 这里路径参数 和 请求参数 顺序（如果是正常的，则路径参数在后？作为关键字参数，则在前？)
+    # 这里路径参数 和 请求参数 顺序（如果是正常的，则路径参数在后？作为关键字参数，则在前？)
+    def patch(self, apply_id):
         data = {"apply_status": 1}
         FriendModel.update_by_limit(apply_id, data)
         apply = FriendModel.find_by_id(apply_id)
@@ -120,43 +107,41 @@ class FriendApplyById(MethodView):
         )
         return apply
 
-
-# @friendblp.route("<user_id>/SortByGroup")
-# class SortByGroup(MethodView):
-#     @friendblp.response(200)
-#     def get(self, user_id):
-#         return {}
-
-#     @friendblp.response(200)
-#     def post(self, user_id):
-#         return {}
-
-#     @friendblp.response(200)
-#     def patch(self, user_id):
-#         return {}
+    @friendblp.response(204)
+    def delete(self, apply_id):
+        apply = FriendApplyModel.find_by_id(apply_id)
+        apply.delete_from_db()
+        return {}
 
 
-#     @friendblp.response(200)
-#     def delete(self, user_id):
-#         return {}8
+@friendblp.route("/GroupBy")
+class GroupBy(MethodView):
+    @friendblp.response(200, GroupSchema(many=True))
+    def get(self):
+        return {}
 
+    @friendblp.arguments(GroupSchema)
+    @friendblp.response(200)
+    def post(self, new_data: GroupModel):
+        id = new_data.save_to_db()
+        return GroupModel.find_by_id(id)
 
-@friendblp.route("/history")
-class Histroy(MethodView):
-    def get(self, **query_dict):
-        pass
+    # 修改好友分组
+    @friendblp.response(200)
+    def patch(self):
+        return {}
 
-    def delete(self, data):
-        pass
+    @friendblp.arguments(GroupSchema)
+    @friendblp.response(204)
+    def delete(self, new_data: GroupModel):
+        new_data.delete_from_db()
+        return {}
 
 
 @friendblp.route("/search")
 class Search(MethodView):
     @friendblp.response(200, InfoOtherSchema(many=True))
     def get(self):
-        from flask_jwt_extended import get_jwt_identity
-
-        user = get_jwt_identity()
         data = request.args
         users = UserModel.query.filter(
             UserModel.username.like(f"{data['filterKey']}%")

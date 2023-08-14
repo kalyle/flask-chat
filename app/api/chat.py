@@ -1,75 +1,78 @@
-from flask_socketio import Namespace, join_room, leave_room, emit, rooms
+from flask_socketio import Namespace, join_room, leave_room, emit
 from app.utils.reids import cache
-from app.extensions.init_ext import socketio
+from app.utils.socket_auth import is_auth
 from app.models.friend_chat_record import FriendChatRecordModel
 from app.models.group_chat_record import GroupChatRecordModel
 from app.models.friend import FriendModel
 from app.models.group_chat import GroupChatModel
-from app.utils.before_request import socket_auth, g, socket_user, verify
-
+from app.models.user import UserModel
+from flask_login import current_user
 import datetime
 
 
+def cache_join_record():
+    # 访问量
+    # 总访问量
+    cache.str_incr("visit_count")
+
+    # 当日访问量
+    today = datetime.date.today().isoformat()
+    cache.str_incr(f"{today}_visit_count", 60 * 60 * 24 * 7)
+
+
+def cache_leave_record():
+    pass
+
+
 class NotifyNamespace(Namespace):
-    # 当socket.io添加了auth参数，将把该参数指传递给connect event
+    # 当socket.io 设置auth参数，该参数指传递给connect event
     # https://github.com/miguelgrinberg/Flask-SocketIO/issues/1555
-    def on_connect(self, token):
-        setattr(socketio.server, 'token', token)
-        is_auth = verify(token)
-        if not is_auth:
-            raise ConnectionRefusedError('authorized fail!')
-
-        self.join_in()
-        cache.set_add("global_online_users", g.user["id"])
-        # 访问量
-        # 总访问量
-        cache.str_incr("visit_count")
-
-        # 当日访问量
-        today = datetime.date.today().isoformat()
-        cache.str_incr(f"{today}_visit_count", 60 * 60 * 24 * 7)
-
-        print("rooms", rooms())
+    @is_auth
+    def on_connect(self):
+        NotifyNamespace.join_in()
+        cache.set_add("global_online_users", current_user.id)
+        cache_join_record()
         return True
 
     def on_disconnect(self):
-        self.leave_out()
-        cache.set_rem("global_online_users", socket_user["id"])
-        cache.hash_del("user_info", socket_user["id"])
+        NotifyNamespace.leave_out()
+        cache.set_rem("global_online_users", current_user.id)
+        cache.hash_del("user_info", current_user.id)
+        cache_leave_record()
 
-    @socket_auth
-    def join_in(self):
-        join_room(socket_user["id"])
+    @staticmethod
+    def join_in():
+        join_room(current_user.id)
         friend_online = []
-        for friend in socket_user["friends"]:
-            join_room(NotifyNamespace.get_name(socket_user["id"], friend["id"]))
+        user = UserModel.find_by_id(current_user.id)
+        for friend in user.firends:
+            join_room(NotifyNamespace.get_name(current_user.id, friend["id"]))
             # 通知在线的朋友，你已上线（设置为需要上线通知，特别关心）,获取好友在线情况
             if cache.set_ismember("global_online_users", friend["id"]):
                 friend_online.append(friend["id"])
                 NotifyNamespace.online_mark(
-                    to=friend["id"], online=1, user=socket_user["id"]
+                    to=friend["id"], online=1, user=current_user.id
                 )
                 # if friend.setting.online_notice:
                 #     emit("friend_online_notice", user, to=friend["id"])
 
-        for group in socket_user["groups"]:
+        for group in user.groups:
             join_room(group.id)
-            NotifyNamespace.online_mark(to=group.name, online=1, user=socket_user["id"])
-            cache.set_add(f"{group.name}_member_online", socket_user["id"])
+            NotifyNamespace.online_mark(to=group.name, online=1, user=current_user.id)
+            cache.set_add(f"{group.name}_member_online", current_user.id)
         emit("friend_online", friend_online)
 
-    @socket_auth
-    def leave_out(self):
-        leave_room(socket_user["id"])
-        for friend in socket_user["friends"]:
-            leave_room(NotifyNamespace.get_name(socket_user["id"], friend["id"]))
-            NotifyNamespace.online_mark(
-                to=friend["id"], online=0, user=socket_user["id"]
-            )
-        for group in socket_user["groups"]:
+    @staticmethod
+    def leave_out():
+        leave_room(current_user.id)
+        user = UserModel.find_by_id(current_user.id)
+        for friend in user.friends:
+            leave_room(NotifyNamespace.get_name(current_user.id, friend["id"]))
+            NotifyNamespace.online_mark(to=friend["id"], online=0, user=current_user.id)
+        for group in user.groups:
             leave_room(group.id)
-            NotifyNamespace.online_mark(to=group.name, online=0, user=socket_user["id"])
-            cache.set_rem(f"{group.name}_member_online", socket_user["id"])
+            NotifyNamespace.online_mark(to=group.name, online=0, user=current_user.id)
+            cache.set_rem(f"{group.name}_member_online", current_user.id)
 
     @staticmethod
     def get_name(user_id: int, friend_id: int):
@@ -87,7 +90,7 @@ class NotifyNamespace(Namespace):
 
 class ChatNamespace(Namespace):
     def on_connect(self, u):
-        return True
+        print("ChatNamespace current_user", current_user)
 
     def on_disconnect(self):
         return True
@@ -101,7 +104,7 @@ class ChatNamespace(Namespace):
                 {"read": True}
             )
             friend = FriendModel.find_by_id(chat_id)
-            room = NotifyNamespace.get_name(socket_user["id"], friend.friend_id)
+            room = NotifyNamespace.get_name(current_user.id, friend.friend_id)
         else:
             GroupChatRecordModel.query.filter(id=chat_id, read=False).update(
                 {"read": True}
