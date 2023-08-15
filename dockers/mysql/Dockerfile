@@ -13,5 +13,4 @@ EXPOSE 3306
 
 # -v "~/funchat/mysql/data:/var/lib/mysql" -v "~/funchat/mysql/my.cnf:/etc/my.cnf"
  
-# CMD ["sh","start.sh"]
-ENTRYPOINT ["/start.sh"]
+ENTRYPOINT ["sh","start.sh"]

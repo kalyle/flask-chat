@@ -1,0 +1,22 @@
+version: "3"
+services:
+  testhub_backend:
+    build:
+      context: ../../
+      dockerfile: dockers/app/Dockerfile
+    privileged: true
+    hostname: testhub_backend_container_${TAG}
+    container_name: testhub_backend_container_${TAG}
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - MYSQL_PORT=${MYSQL_PORT}
+    networks:
+      - funchat
+    ports:
+      - ${APP_PORT}:5000
+    restart: always
+networks:
+  funchat:
+    external: true

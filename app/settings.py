@@ -1,4 +1,7 @@
 import os, datetime
+from dotenv import load_dotenv
+
+load_dotenv(verbose=True)
 
 
 class Config:
@@ -6,12 +9,8 @@ class Config:
     API_TITLE = "FlaskChat"
     API_VERSION = "v1"
     OPENAPI_VERSION = "3.0.2"
+    # cors
     CORS_SUPPORTS_CREDENTIALS = True
-
-    JWT_SECRET_KEY = ""
-    JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(days=1)
-    JWT_HEADER_NAME = "Authorization"
-    JWT_HEADER_TYPE = ""
 
     # session
     SECRET_KEY = 'top-secret!'

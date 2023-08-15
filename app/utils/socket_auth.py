@@ -2,11 +2,11 @@ from functools import wraps
 from flask_login import current_user
 
 
-def is_auth():
-    @wraps
-    def wapper(func):
-        if not current_user.id:
+def is_auth(func):
+    @wraps(func)
+    def wapper(*args, **kwargs):
+        if current_user.is_authenticated:
             raise ConnectionRefusedError('authorized fail!')
-        func()
+        return func(*args, **kwargs)
 
     return wapper

@@ -1,5 +1,6 @@
 FLASK_APP = "app:create_app()"
 FLASK_DEBUG=True
+FLASK_ENV='development'
 MYSQL_HOST=1.12.236.91
 REDIS_HOST=1.12.236.91
 MYSQL_PORT=3306
