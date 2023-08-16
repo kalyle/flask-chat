@@ -80,7 +80,7 @@ class UserTagLike(MethodView):
     @tagblp.response(200)
     def get(self, new_data: UserTagMappingModel, tag_id):
         if new_data.id != tag_id:
-            abort("参数错误")
+            abort(400, "参数错误")
         liked_by_ids = {id for id in new_data.liked_by}
         friend_ids = {id for id in current_user.friends}
         now_liked_by_ids = friend_ids & liked_by_ids

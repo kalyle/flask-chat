@@ -1,5 +1,5 @@
 from flask.views import MethodView
-from flask_jwt_extended import current_user
+from flask_login import current_user, login_required
 from flask_smorest import Blueprint, abort
 from app.models.user import UserModel
 from app.models.group_chat import GroupModel, GroupApplyModel

@@ -28,7 +28,8 @@ class NotifyNamespace(Namespace):
     # 当socket.io 设置auth参数，该参数指传递给connect event
     # https://github.com/miguelgrinberg/Flask-SocketIO/issues/1555
     @is_auth
-    def on_connect(self):
+    def on_connect(self, auth=None):
+        print("notify", auth)
         NotifyNamespace.join_in()
         cache.set_add("global_online_users", current_user.id)
         cache_join_record()
@@ -45,7 +46,7 @@ class NotifyNamespace(Namespace):
         join_room(current_user.id)
         friend_online = []
         user = UserModel.find_by_id(current_user.id)
-        for friend in user.firends:
+        for friend in user.friends:
             join_room(NotifyNamespace.get_name(current_user.id, friend["id"]))
             # 通知在线的朋友，你已上线（设置为需要上线通知，特别关心）,获取好友在线情况
             if cache.set_ismember("global_online_users", friend["id"]):

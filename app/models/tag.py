@@ -1,18 +1,16 @@
-from flask_jwt_extended import current_user
-
-from app.models import db
 from sqlalchemy.orm import Session
 
-from .base import BaseModel
+from app.models.base import BaseModel, db
 from sqlalchemy import Column, String, Integer
+from flask_login import current_user
 
 
 class TagModel(BaseModel):
     __tablename__ = 'tag'
 
-    name = Column(String(30))
-    color = Column(String(30))
-    created_by = Column(Integer)
+    name = Column(String(30), unique=True, nullable=False)
+    color = Column(String(30), nullable=False)
+    created_by = Column(Integer, default=-1, nullable=False)
 
     def __repr__(self):
         return "<%s(id=%s,name=%s,created_by=%s)>" % (

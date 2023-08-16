@@ -1,23 +1,19 @@
-import os, datetime
+import os
 from dotenv import load_dotenv
 
-load_dotenv(verbose=True)
+load_dotenv(dotenv_path='.flaskenv', override=True)
 
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "DEV_KEY") or 'secret!'
-    API_TITLE = "FlaskChat"
+    SECRET_KEY = os.getenv("SECRET_KEY") or 'secret!'
+    API_TITLE = "FunChat"
     API_VERSION = "v1"
     OPENAPI_VERSION = "3.0.2"
-    # cors
-    CORS_SUPPORTS_CREDENTIALS = True
 
     # session
     SECRET_KEY = 'top-secret!'
     SESSION_TYPE = "filesystem"
-    # SESSION_COOKIE_NAME = "funchat"
-    # SESSION_COOKIE_HTTPONLY = False
-    # SESSION_COOKIE_DOMAIN = False
+
     # 连接池
     # SQLALCHEMY_POOL_SIZE = 0
     # SQLALCHEMY_POOL_TIMEOUT = 0
@@ -42,7 +38,8 @@ class DevConfig(Config):
     # redis
     REDIS_HOST = os.getenv("REDIS_HOST") or "127.0.0.1"
     REDIS_POST = int(os.getenv("REDIS_PORT") or "6379")
-
+    # cors
+    CORS_SUPPORTS_CREDENTIALS = True
     # smorest
     OPENAPI_VERSION = "3.0.2"
     OPENAPI_JSON_PATH = "api-spec.json"

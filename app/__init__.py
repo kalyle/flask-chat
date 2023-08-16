@@ -15,7 +15,6 @@ def create_app():
     app.config.from_object(settings.DevConfig)
     app.config['SECRET_KEY'] = 'top-secret!'
     app.config['SESSION_TYPE'] = 'filesystem'
-    print(os.getenv("MYSQL_HOST"))
 
     with app.app_context():
         # auth
